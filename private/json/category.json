@@ -1,0 +1,24 @@
+{
+    "category":[
+        {"en":"Promotion", "th":"โปรโมชั่น"},
+        {"en":"Award", "th":"พิธีมอบรางวัล"},
+        {"en":"Conference", "th":"สัมมนา"},
+        {"en":"Contest", "th":"ประกวดความสามารถ"},
+        {"en":"Convention", "th":"ประชุม"},
+        {"en":"Concert", "th":"คอนเสิร์ท"},
+        {"en":"Education", "th":"การศึกษา"},
+        {"en":"Exhibition", "th":"นิทรรศการ"},
+        {"en":"Fair", "th":"งานแสดง"},
+        {"en":"Fashion", "th":"แฟชั่น เดินแบบ"},
+        {"en":"Festivals", "th":"เทศกาล"},
+        {"en":"Film Festival", "th":"เทศกาลภาพยนต์"},
+        {"en":"Film Premieres", "th":"ชมภาพยนต์ล่วงหน้า"},
+        {"en":"Music Festival", "th":"เทศกาลดนตรี"},
+        {"en":"Pageants", "th":"ประกวดนางงาม"},
+        {"en":"PR Event", "th":"ประชาสัมพันธ์ เปิดตัว"},
+        {"en":"Product / Design", "th":"แสดงผลิตภัณฑ์"},
+        {"en":"Religious Event", "th":"ศาสนา"},
+        {"en":"Sports", "th":"กีฬา"},
+        {"en":"Technology", "th":"เทคโนโลยี"}
+    ]
+}

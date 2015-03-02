@@ -1,0 +1,4 @@
+# Block all web crawlers from all content
+# http://moz.com/learn/seo/robotstxt
+User-agent: *
+Disallow: / 

@@ -1,0 +1,14 @@
+# Configuration
+config.php
+
+# Netbeans and phpStorm
+nbproject/*
+.idea
+
+# ETC.
+vendor/*
+rundoc.sh
+test.sh
+tests/_output/*
+tests/_output/*
+test.txt
