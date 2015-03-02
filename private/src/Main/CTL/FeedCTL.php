@@ -26,6 +26,7 @@ class FeedCTL extends BaseCTL {
     public function gets(){
         try {
             $items = FeedService::getInstance()->gets($this->reqInfo->params(), $this->getCtx());
+            
             foreach ($items['data'] as $key => $item) {
                 MongoHelper::standardIdEntity($item);
                 $item['created_at'] = MongoHelper::timeToInt($item['created_at']);

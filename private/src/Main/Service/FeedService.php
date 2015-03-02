@@ -118,20 +118,25 @@ class FeedService extends BaseService {
         $total = $this->getCollection()->count($condition);
         $length = $cursor->count(true);
 
-        $data = array();
+        $data = [];
         foreach($cursor as $item){
-            $item['thumb'] = Image::load($item['thumb'])->toArrayResponse();
-
-
             $item['id'] = $item['_id']->{'$id'};
             unset($item['_id']);
-
+            
+            $item['created_at'] = MongoHelper::timeToInt($item['created_at']);
+            $item['updated_at'] = MongoHelper::timeToInt($item['updated_at']);
+//            $item['node'] = NodeHelper::news($item['id']);
+//            $items['data'][$key] = $item;
+            
+            $item['thumb'] = Image::load($item['thumb'])->toArrayResponse();
 
             $item['node'] = $this->makeNode($item);
 
             $data[] = $item;
         }
-
+        
+        dump($data);
+        exit;
         $res = [
             'length'=> $length,
             'total'=> $total,

@@ -48,7 +48,7 @@ class OAuthService extends BaseService {
         } catch(FacebookRequestException $e) {
             throw new ServiceException(ResponseHelper::error($e->getMessage()));
         }
-        
+            
         // Check facebook id again
         if($fbId === null){
             throw new ServiceException(ResponseHelper::error('Invalid facebook token'));
@@ -59,7 +59,7 @@ class OAuthService extends BaseService {
             // Search facebook_id from database
             $item = $this->getUsersCollection()->findOne(['fb_id'=> $fbId], ['access_token', 'type', 'private_key']);
             $now = new \MongoDate();
-            
+
             if(is_null($item)){
                 
                 $fb_birth_date = $me->getBirthday();
@@ -96,7 +96,8 @@ class OAuthService extends BaseService {
                     'private_key' => $user_private_key,
                     'level' => 1,
                     'advertiser' => 0,
-                    'group_role' => ['group_id' => '54e855072667467f7709320e', 'role_perm_id' => '54eaf79810f0ed0d0a8b4568']
+                    'group_role' => ['group_id' => '54e855072667467f7709320e', 'role_perm_id' => '54eaf79810f0ed0d0a8b4568'],
+                    'hn_number' => '',
                 ];
                 
                 $item['access_token'] = UserHelper::generate_token(MongoHelper::standardId($item['_id']), $user_private_key);

@@ -21,7 +21,8 @@ class DB {
 
     public static function getDB(){
         if(is_null(self::$db)){
-            self::$db = self::getMongo()->eventsniff;
+            $db_name = MONGO_DB;
+            self::$db = self::getMongo()->$db_name;
         }
         return self::$db;
     }

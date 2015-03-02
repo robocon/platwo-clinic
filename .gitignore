@@ -11,4 +11,5 @@ rundoc.sh
 test.sh
 tests/_output/*
 tests/_output/*
+tests/*.suite.yml
 test.txt
