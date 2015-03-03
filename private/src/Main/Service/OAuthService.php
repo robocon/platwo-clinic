@@ -96,7 +96,7 @@ class OAuthService extends BaseService {
                     'private_key' => $user_private_key,
                     'level' => 1,
                     'advertiser' => 0,
-                    'group_role' => ['group_id' => '54e855072667467f7709320e', 'role_perm_id' => '54eaf79810f0ed0d0a8b4568'],
+                    'group_role' => ['group_id' => '54f434bcb3bf91e43f386ec2', 'role_perm_id' => '54f43a66b3bf91e43f386ed6'],
                     'hn_number' => '',
                 ];
                 

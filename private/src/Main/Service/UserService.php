@@ -1035,4 +1035,23 @@ HTML;
         return true;
     }
     
+    public function update_user_profile($user_id, $value, $key, Context $ctx) {
+        
+        $params = [
+            'user_id' => $user_id,
+            $key => $value,
+        ];
+        
+        $v = new Validator($params);
+        $v->rule('required', ["user_id", $key]);
+        if(!$v->validate()) {
+            throw new ServiceException(ResponseHelper::validateError($v->errors()));
+        }
+        
+        $res = $this->getCollection()->update(['_id'=> new \MongoId($user_id)], ['$set' => [$key => $value]]);
+        if ($res['n'] == 0) {
+            return false;
+        }
+        return true;
+    }
 }

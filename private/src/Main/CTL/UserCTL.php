@@ -7,10 +7,12 @@
  */
 
 namespace Main\CTL;
-use Main\DataModel\Image;
-use Main\Exception\Service\ServiceException;
-use Main\Helper\MongoHelper;
-use Main\Service\UserService;
+use Main\DataModel\Image,
+    Main\Exception\Service\ServiceException,
+    Main\Helper\MongoHelper,
+    Main\Helper\UserHelper,
+    Main\Helper\ResponseHelper,
+    Main\Service\UserService;
 
 
 /**
@@ -353,50 +355,35 @@ class UserCTL extends BaseCTL {
     }
     
     /**
-     * @api {put} /user/profile/:user_id/:action PUT /user/profile/:user_id/:action
+     * @api {put} /user/profile/:user_id PUT /user/profile/:user_id
      * @apiDescription Update picture, display name and detail
      * @apiName PostUserUpdatePorfile
      * @apiGroup User
      * @apiParam {String} user_id User Id
-     * @apiParam {String} action Tell method which part do you want to update (picture, display_name, detail)
-     * @apiParam {String} picture Base 64 encode image file
-     * @apiParam {String} display_name Your display name
-     * @apiParam {String} detail Anything you want to add  (maximum at 150 character)
-     * @apiParam {String} gender Your gender
-     * @apiParam {String} birth_date Your birth date format YYYY-mm-dd
-     * @apiParam {String} email Your email
-     * @apiParam {String} password Your current password
-     * @apiParam {String} new_password Your new password
-     * @apiParam {String} confirm_password Confirm your new password
-     * @apiParam {String} website Your website format http://www.google.com
-     * @apiParam {String} phone Your phone number
      * @apiParam {String} fb_name Your text
+     * @apiParam {String} hn_number Update HN Number
      * @apiParamExample {String} Request-Example:
-     * picture=base64_encode
-     * display_name=Test Name
-     * detail=Test to update detail
-     * gender=male
-     * birth_date=2012-01-26
-     * username=p2user
-     * email=p2mail@gmail.com
-     * password=1234
-     * new_password=111111
-     * confirm_password=111111
-     * website=http://google.com
-     * phone=0888475124
      * fb_name=Cartman
-     * @apiSampleRequest /user/profile/:user_id/:action
+     * hn_number=TH00998571
      * @apiSuccessExample {json} Success-Response:
      * {"success":true}
      * 
      * @PUT
-     * @uri /profile/[h:user_id]/[*:action]
+     * @uri /profile/[h:user_id]
      */
     public function update_profile() {
         try {
-            $action = $this->reqInfo->urlParam('action');
+            
+            if(UserHelper::hasPermission('profile', 'update') === false){
+                throw new ServiceException(ResponseHelper::notAuthorize('Access deny'));
+            }
+            
+            $params = $this->reqInfo->params();
             $user_id = $this->reqInfo->urlParam('user_id');
+            
             $res = false;
+            
+            /*
             if ($action === 'picture') {
                 $img_res = UserService::getInstance()->update_profile_picture($user_id, $this->reqInfo->param('picture'), $this->getCtx());
                 $res = ['success' => $img_res['success'], 'picture' => $img_res['picture']];
@@ -428,11 +415,20 @@ class UserCTL extends BaseCTL {
             } elseif ($action === 'phone') {
                 $response = UserService::getInstance()->update_phone($user_id, $this->reqInfo->param('phone'), $this->getCtx());
                 $res = ['success' => $response];
-            } elseif ($action === 'fb_name') {
-                $response = UserService::getInstance()->update_facebook_name($user_id, $this->reqInfo->param('fb_name'), $this->getCtx());
+            } else
+            */
+            if (isset($params['fb_name'])) {
+
+                $response = UserService::getInstance()->update_user_profile($user_id, $params['fb_name'], 'fb_name', $this->getCtx());
                 $res = ['success' => $response];
+                
+            } elseif (isset($params['hn_number'])) {
+                
+                $response = UserService::getInstance()->update_user_profile($user_id, $params['hn_number'], 'hn_number', $this->getCtx());
+                $res = ['success' => $response];
+                    
             } else {
-                throw new ServiceException(ResponseHelper::error('Invalid field'));
+                throw new ServiceException(ResponseHelper::error('Invalid field :('));
             }
             
             return $res;

@@ -81,7 +81,9 @@ class UserHelper {
                 self::$group_role = $role_perm['perms'];
             }
             
-            self::$default_location = $user['default_location'];
+            if (isset($user['default_location'])) {
+                self::$default_location = $user['default_location'];
+            }
             
             return true;
         }
