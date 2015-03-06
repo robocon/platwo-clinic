@@ -44,11 +44,9 @@ class UserService extends BaseService {
     }
 
     public function add($params, Context $ctx){
-        $allow = ["username", "email", "password", "gender", "birth_date"];
-        $data = ArrayHelper::filterKey($allow, $params);
         
-        $v = new Validator($data);
-        $v->rule('required', ["username", "email", "password", "gender", "birth_date"]);
+        $v = new Validator($params);
+        $v->rule('required', ["username", "email", "password"]);
         $v->rule('email', ["email"]);
         $v->rule('lengthBetween', 'username', 4, 32);
         $v->rule('lengthBetween', 'password', 6, 32);
@@ -57,6 +55,9 @@ class UserService extends BaseService {
         if(!$v->validate()) {
             throw new ServiceException(ResponseHelper::validateError($v->errors()));
         }
+        
+        $allow = ["username", "email", "password", "gender", "birth_date"];
+        $data = ArrayHelper::filterKey($allow, $params);
         
         $user_count = $this->getCollection()->find([
             '$or'=> [
@@ -69,13 +70,13 @@ class UserService extends BaseService {
             throw new ServiceException(ResponseHelper::validateError(['username'=> ['Duplicate username'], 'email'=> ['Duplicate email']]));
         }
         
-        $device_token = isset($params['ios_device_token']) ? $params['ios_device_token']['key'] : $params['android_token'] ; 
-        $user = $this->getCollection()->findOne([
-            '$or' => [
-                ['ios_device_token.key' => $device_token],
-                ['android_token' => $device_token]
-            ]
-        ]);
+//        $device_token = isset($params['ios_device_token']) ? $params['ios_device_token']['key'] : $params['android_token'] ; 
+//        $user = $this->getCollection()->findOne([
+//            '$or' => [
+//                ['ios_device_token.key' => $device_token],
+//                ['android_token' => $device_token]
+//            ]
+//        ]);
         
         $now = new \MongoDate();
         $default_setting = UserHelper::defaultSetting();
@@ -91,6 +92,9 @@ class UserService extends BaseService {
             'password' => UserHelper::generate_password($data['password'], $user_private_key),
             'display_name' => $data['username'],
             'birth_date' => $birth_date,
+            'email' => $data['email'],
+            'username' => $data['username'],
+            'gender' => $data['gender'],
 
             'display_notification_number' => 0,
             'type' => 'normal',
@@ -104,22 +108,24 @@ class UserService extends BaseService {
             'level' => 1,
             'advertiser' => 0,
 
-            'group_role' => ['group_id' => '54e855072667467f7709320e', 'role_perm_id' => '54eaf79810f0ed0d0a8b4568']
+            'group_role' => ['group_id' => '54f434bcb3bf91e43f386ec2', 'role_perm_id' => '54f43a66b3bf91e43f386ed5']
         ];
             
-        if($user === null){
-            $this->getCollection()->insert($entity);
-        }  else {
-            
-            unset($entity['_id']);
-            unset($entity['private_key']);
-            unset($entity['created_at']);
-            
-            // Override access_token
-            $entity['access_token'] = UserHelper::generate_token(MongoHelper::standardId($user['_id']), $user['private_key']);
-            $this->getCollection()->update(['_id' => new \MongoId($user['_id']->{'$id'})], ['$set' => $entity]);
-            $entity['_id'] = $user['_id'];
-        }
+        $this->getCollection()->insert($entity);
+        
+//        if($user === null){
+//            $this->getCollection()->insert($entity);
+//        }  else {
+//            
+//            unset($entity['_id']);
+//            unset($entity['private_key']);
+//            unset($entity['created_at']);
+//            
+//            // Override access_token
+//            $entity['access_token'] = UserHelper::generate_token(MongoHelper::standardId($user['_id']), $user['private_key']);
+//            $this->getCollection()->update(['_id' => new \MongoId($user['_id']->{'$id'})], ['$set' => $entity]);
+//            $entity['_id'] = $user['_id'];
+//        }
         
         // remember device token
         if(isset($params['ios_device_token'])){
