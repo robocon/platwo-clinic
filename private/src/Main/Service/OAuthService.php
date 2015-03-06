@@ -112,26 +112,20 @@ class OAuthService extends BaseService {
                 $pic = Image::upload(base64_encode($pictureSource));
                 $item['picture'] = $pic->toArray();
                 
-                // Check mobile device token
-                $device_token = isset($params['ios_device_token']) ? $params['ios_device_token']['key'] : $params['android_token'] ; 
-                $user = $this->getUsersCollection()->findOne([
-                    '$or' => [
-                        ['ios_device_token.key' => $device_token],
-                        ['android_token' => $device_token]
-                    ]
-                ]);
+                $this->getUsersCollection()->insert($item);
                 
-                if($user === null){
-                    $this->getUsersCollection()->insert($item);
-                }  else {
-                    unset($item['_id']);
-                    $this->getUsersCollection()->update(['_id' => new \MongoId($user['_id']->{'$id'})], ['$set' => $item]);
-                    $item['_id'] = $user['_id'];
-                }
+//                if($user === null){
+//                    $this->getUsersCollection()->insert($item);
+//                }  else {
+//                    unset($item['_id']);
+//                    $this->getUsersCollection()->update(['_id' => new \MongoId($user['_id']->{'$id'})], ['$set' => $item]);
+//                    $item['_id'] = $user['_id'];
+//                }
                 
             }
             // If login with facebook again it will generate new access_token
             else{
+                
                 $update = [
                     'last_login' => $now,
                     'last_login' => $now,
@@ -139,6 +133,7 @@ class OAuthService extends BaseService {
                 ];
                 $this->getUsersCollection()->update(['_id'=> $item['_id']], ['$set'=> $update]);
                 $item['access_token'] = $update['access_token'];
+                
             }
             
             $this->getUsersCollection()->ensureIndex(['access_token'=> 1, 'app_id'=> 1]);
