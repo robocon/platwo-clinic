@@ -104,4 +104,34 @@ class AppointmentCTL extends BaseCTL {
             return $e->getResponse();
         }
     }
+    
+    /**
+     * @POST
+     * @uri /datetime
+     */
+    public function save_datetime() {
+        try {
+            
+            $item = AppointmentService::getInstance()->save_datetime($this->reqInfo->params(), $this->getCtx());
+            return ['success' => $item];
+            
+        } catch (ServiceException $e) {
+            return $e->getResponse();
+        }
+    }
+    
+    /**
+     * @GET
+     * @uri /datetime
+     */
+    public function get_datetime() {
+        try {
+            
+            $item = AppointmentService::getInstance()->get_datetime($this->getCtx());
+            return $item;
+            
+        } catch (ServiceException $e) {
+            return $e->getResponse();
+        }
+    }
 }

@@ -120,4 +120,29 @@ class AppointmentService extends BaseService {
         }
         return false;
     }
+    
+    public function save_datetime($params, Context $ctx) {
+        
+        $v = new Validator($params);
+        $v->rule('required', ['date','time_start','time_end']);
+        if(!$v->validate()){
+            throw new ServiceException(ResponseHelper::validateError($v->errors()));
+        }
+        
+        $db = DB::getDB();
+        $find = $db->config->findOne();
+        $update = $db->config->update(['_id' => $find['_id']],['$set' => $params]);
+        if ($update['n'] > 0) {
+            return true;
+        }
+        return false;
+    }
+    
+    public function get_datetime(Context $ctx) {
+        
+        $db = DB::getDB();
+        $find = $db->config->findOne([],['date','time_start','time_end']);
+        unset($find['_id']);
+        return $find;
+    }
 }
