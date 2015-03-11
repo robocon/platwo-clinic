@@ -27,7 +27,7 @@ class ServiceService extends BaseService {
 
     public function addItem($params, Context $ctx){
         $v = new Validator($params);
-        $v->rule('required', ['name', 'detail', 'price', 'cus_only', 'price_cus_only', 'pictures']);
+        $v->rule('required', ['name', 'detail', 'price', 'pictures']);
 
         if(!$v->validate()){
             throw new ServiceException(ResponseHelper::validateError($v->errors()));
@@ -51,8 +51,8 @@ class ServiceService extends BaseService {
         }
         $insert['pictures_length'] = count($insert['pictures']);
 
-        $insert['cus_only'] = (bool)@$params['cus_only'];
-        $insert['price_cus_only'] = (bool)@$params['price_cus_only'];
+//        $insert['cus_only'] = (bool)@$params['cus_only'];
+//        $insert['price_cus_only'] = (bool)@$params['price_cus_only'];
 
         if(isset($insert['price'])){
             $insert['price'] = (int)$insert['price'];
@@ -76,8 +76,11 @@ class ServiceService extends BaseService {
         $insert['view_count'] = 0;
 
 //        $insert['app_id'] = $ctx->getAppId();
-        MongoHelper::setCreatedAt($insert);
-        MongoHelper::setUpdatedAt($insert);
+//        MongoHelper::setCreatedAt($insert);
+//        MongoHelper::setUpdatedAt($insert);
+        $now = new \MongoDate();
+        $insert['created_at'] = $now;
+        $insert['updated_at'] = $now;
 
         $this->getCollection()->insert($insert);
         if(isset($insert['parent_id'])){

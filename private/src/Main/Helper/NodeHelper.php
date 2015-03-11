@@ -42,7 +42,7 @@ class NodeHelper {
         $id = MongoHelper::standardId($id);
         return [
             'picture'=> URL::absolute('/service/'.$id.'/picture'),
-            'share'=> URL::share('/service.php?id='.$id)
+//            'share'=> URL::share('/service.php?id='.$id)
         ];
     }
 
