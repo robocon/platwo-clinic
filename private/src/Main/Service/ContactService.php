@@ -37,7 +37,7 @@ class ContactService extends BaseService {
     }
 
     public function get(Context $ctx){
-        $contact = $this->getCollection()->findOne([], ["facebook", "website", "email"]);
+        $contact = $this->getCollection()->findOne([], ['phone','website','email','facebook','line']);
         if(is_null($contact)){
             throw new ServiceException(ResponseHelper::notFound());
         }
@@ -105,7 +105,7 @@ class ContactService extends BaseService {
     }
 
     public function edit ($params, Context $ctx) {
-        $allowed = ["facebook", "website", "email"];
+        $allowed = ['phone','website','email','facebook','line'];
         $set = ArrayHelper::filterKey($allowed, $params);
         $entity = $this->get($ctx);
         if(count($set)==0){

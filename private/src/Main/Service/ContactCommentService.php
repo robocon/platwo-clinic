@@ -9,10 +9,11 @@
 namespace Main\Service;
 
 
-use Main\Context\Context;
-use Main\DB;
-use Main\Exception\Service\ServiceException;
-use Main\Helper\ResponseHelper;
+use Main\Context\Context,
+    Main\DB,
+    Main\Exception\Service\ServiceException,
+    Main\Helper\ResponseHelper,
+    Main\Helper\UserHelper;
 
 class ContactCommentService extends BaseService {
     public function getCollection(){
@@ -55,16 +56,17 @@ class ContactCommentService extends BaseService {
     }
 
     public function add($params, Context $ctx){
-        $now = new \MongoTimestamp();
-        $user = $ctx->getUser();
-        if(is_null($user)){
-            throw new ServiceException(ResponseHelper::requireAuthorize());
-        }
+        $now = new \MongoDate();
+        $user = UserHelper::getUserDetail();
+//        $user = $ctx->getUser();
+//        if(is_null($user)){
+//            throw new ServiceException(ResponseHelper::requireAuthorize());
+//        }
         $entity = array(
             "message"=> $params['message'],
             "created_at"=> $now,
             "user"=> [
-                "_id"=> $user['_id'],
+                "id"=> $user['id'],
                 "display_name"=> $user['display_name']
             ]
         );

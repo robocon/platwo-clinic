@@ -7,12 +7,14 @@
  */
 
 namespace Main\CTL;
-use Main\DataModel\Image;
-use Main\Exception\Service\ServiceException;
-use Main\Helper\MongoHelper;
-use Main\Helper\NodeHelper;
-use Main\Service\ContactCommentService;
-use Main\Service\ContactService;
+use Main\DataModel\Image,
+    Main\Exception\Service\ServiceException,
+    Main\Helper\MongoHelper,
+    Main\Helper\NodeHelper,
+    Main\Helper\UserHelper,
+    Main\Helper\ResponseHelper,
+    Main\Service\ContactCommentService,
+    Main\Service\ContactService;
 
 /**
  * @Restful
@@ -39,6 +41,9 @@ class ContactCTL extends BaseCTL {
      */
     public function edit(){
         try {
+            
+            
+            
             $item = ContactService::getInstance()->edit($this->reqInfo->inputs(), $this->getCtx());
             MongoHelper::removeId($item);
             return $item;
@@ -190,16 +195,21 @@ class ContactCTL extends BaseCTL {
      * @uri /comment
      */
     public function addComment(){
-            try {
-                $comment = ContactCommentService::getInstance()->add($this->reqInfo->params(), $this->getCtx());
-                MongoHelper::standardIdEntity($comment);
-                $comment['created_at'] = MongoHelper::timeToInt($comment['created_at']);
-                MongoHelper::standardIdEntity($comment['user']);
-                return $comment;
+        try {
+
+            if(UserHelper::hasPermission('contact_comment', 'add') === false){
+                throw new ServiceException(ResponseHelper::notAuthorize('Access deny'));
             }
-            catch (ServiceException $ex) {
-                return $ex->getResponse();
-            }
+
+            $comment = ContactCommentService::getInstance()->add($this->reqInfo->params(), $this->getCtx());
+            MongoHelper::standardIdEntity($comment);
+            $comment['created_at'] = MongoHelper::dateToYmd($comment['created_at']);
+            MongoHelper::standardIdEntity($comment['user']);
+            return $comment;
+        }
+        catch (ServiceException $ex) {
+            return $ex->getResponse();
+        }
     }
 
 
