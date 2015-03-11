@@ -11,8 +11,6 @@ $I->sendPOST('coupon', [
     'name' => 'Lorem ipsum dolor '.time(),
     'detail' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit '.time(),
     'thumb' => $image,
-    'code' => substr(uniqid(), 0, 5), // random code 5 string
-    
     'condition' => '120',
 ]);
 $I->seeResponseCodeIs(200);

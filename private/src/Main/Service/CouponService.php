@@ -35,8 +35,7 @@ class CouponService extends BaseService {
 
     public function addCoupon($params, Context $ctx) {
         $v = new Validator($params);
-        $v->rule('required', ['name', 'detail', 'thumb', 'code']);
-        $v->rule('length', 'code', 5);
+        $v->rule('required', ['name', 'detail', 'thumb']);
 
         if (!$v->validate()) {
             throw new ServiceException(ResponseHelper::validateError($v->errors()));
@@ -52,7 +51,7 @@ class CouponService extends BaseService {
         $insert['seq'] = (int) @$agg['result'][0]['max'] + 1;
 
         $now = new \MongoDate(time());
-
+        $insert['code'] = strtoupper(substr(uniqid(), -5));
         $insert['created_at'] = $now;
         $insert['updated_at'] = $now;
 //        $insert['cus_only'] = (bool)$params['cus_only'];
