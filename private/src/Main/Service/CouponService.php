@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Created by PhpStorm.
  * User: p2
@@ -8,48 +9,52 @@
 
 namespace Main\Service;
 
-
-use Main\Context\Context;
-use Main\DataModel\Image;
-use Main\DB;
-use Main\Event\Event;
-use Main\Exception\Service\ServiceException;
-use Main\Helper\ArrayHelper;
-use Main\Helper\MongoHelper;
-use Main\Helper\NotifyHelper;
-use Main\Helper\ResponseHelper;
-use Main\Helper\UpdatedTimeHelper;
-use Main\Helper\URL;
-use Valitron\Validator;
+use Main\Context\Context,
+    Main\DataModel\Image,
+    Main\DB,
+    Main\Event\Event,
+    Main\Exception\Service\ServiceException,
+    Main\Helper\ArrayHelper,
+    Main\Helper\MongoHelper,
+    Main\Helper\UserHelper,
+    Main\Helper\NotifyHelper,
+    Main\Helper\ResponseHelper,
+    Main\Helper\UpdatedTimeHelper,
+    Main\Helper\URL,
+    Valitron\Validator;
 
 class CouponService extends BaseService {
-    public function getCouponCodeCollection(){
+
+    public function getCouponCodeCollection() {
         return DB::getDB()->coupon_codes;
     }
 
-    public function getCollection(){
+    public function getCollection() {
         return DB::getDB()->coupons;
     }
 
-    public function addCoupon($params, Context $ctx){
+    public function addCoupon($params, Context $ctx) {
         $v = new Validator($params);
-        $v->rule('required', ['name', 'detail', 'condition', 'thumb']);
+        $v->rule('required', ['name', 'detail', 'thumb', 'code']);
+        $v->rule('length', 'code', 5);
 
-        if(!$v->validate()){
+        if (!$v->validate()) {
             throw new ServiceException(ResponseHelper::validateError($v->errors()));
         }
 
-        $insert = ArrayHelper::filterKey(['name', 'detail', 'condition'], $params);
+        $insert = ArrayHelper::filterKey(['name', 'detail', 'code'], $params);
         $insert['thumb'] = Image::upload($params['thumb'])->toArray();
 
         // seq insert
         $agg = $this->getCollection()->aggregate([
-            ['$group'=> ['_id'=> null, 'max'=> ['$max'=> '$seq']]]
+            ['$group' => ['_id' => null, 'max' => ['$max' => '$seq']]]
         ]);
-        $insert['seq'] = (int)@$agg['result'][0]['max'] + 1;
+        $insert['seq'] = (int) @$agg['result'][0]['max'] + 1;
 
-        MongoHelper::setCreatedAt($insert);
-        MongoHelper::setUpdatedAt($insert);
+        $now = new \MongoDate(time());
+
+        $insert['created_at'] = $now;
+        $insert['updated_at'] = $now;
 //        $insert['cus_only'] = (bool)$params['cus_only'];
 //        $insert['type'] = 'coupon';
         $insert['used_count'] = 0;
@@ -61,28 +66,28 @@ class CouponService extends BaseService {
         UpdatedTimeHelper::update('coupon', time());
 
         // notify
-        Event::add('after_response', function() use($insert){
+        Event::add('after_response', function() use($insert) {
             NotifyHelper::sendAll($insert['_id'], 'coupon', 'ได้เพิ่มคูปอง', $insert['detail']);
         });
 
         return $insert;
     }
 
-    public function get($id, Context $ctx){
-        $item = $this->getCollection()->findOne(['_id'=> MongoHelper::mongoId($id)]);
-        if(is_null($item)){
+    public function get($id, Context $ctx) {
+        $item = $this->getCollection()->findOne(['_id' => MongoHelper::mongoId($id)]);
+        if (is_null($item)) {
             throw new ServiceException(ResponseHelper::notFound());
         }
         return $item;
     }
 
-    public function editCoupon($id, $params, Context $ctx){
+    public function editCoupon($id, $params, Context $ctx) {
         $set = ArrayHelper::filterKey(['name', 'detail', 'condition'], $params);
         $entity = $this->get($id, $ctx);
-        if(isset($params['thumb'])){
+        if (isset($params['thumb'])) {
             $set['thumb'] = Image::upload($params['thumb'])->toArray();
         }
-        $this->getCollection()->update(['_id'=> MongoHelper::mongoId($id)], ['$set'=> ArrayHelper::ArrayGetPath($set)]);
+        $this->getCollection()->update(['_id' => MongoHelper::mongoId($id)], ['$set' => ArrayHelper::ArrayGetPath($set)]);
 
         // service update timestamp (last_update)
         UpdatedTimeHelper::update('coupon', time());
@@ -90,14 +95,14 @@ class CouponService extends BaseService {
         return $this->get($id, $ctx);
     }
 
-    public function gets($params, Context $ctx){
+    public function gets($params, Context $ctx) {
         $default = array(
-            "page"=> 1,
-            "limit"=> 15,
+            "page" => 1,
+            "limit" => 15,
         );
         $options = array_merge($default, $params);
 
-        $skip = ($options['page']-1)*$options['limit'];
+        $skip = ($options['page'] - 1) * $options['limit'];
 
 //        $isCus = false;
 //        $user = $ctx->getUser();
@@ -115,14 +120,14 @@ class CouponService extends BaseService {
 //            ];
 //        }
         $cursor = $this->getCollection()
-            ->find($condition)
-            ->limit((int)$options['limit'])
-            ->skip((int)$skip)
-            ->sort(['seq'=> -1]);
+                ->find($condition)
+                ->limit((int) $options['limit'])
+                ->skip((int) $skip)
+                ->sort(['seq' => -1]);
 
         $data = [];
 
-        foreach($cursor as $item){
+        foreach ($cursor as $item) {
             $data[] = $item;
         }
 
@@ -130,22 +135,22 @@ class CouponService extends BaseService {
         $length = $cursor->count(true);
 
         $res = [
-            'length'=> $length,
-            'total'=> $total,
-            'data'=> $data,
-            'paging'=> [
-                'page'=> (int)$options['page'],
-                'limit'=> (int)$options['limit']
+            'length' => $length,
+            'total' => $total,
+            'data' => $data,
+            'paging' => [
+                'page' => (int) $options['page'],
+                'limit' => (int) $options['limit']
             ]
         ];
 
-        $pagingLength = $total/(int)$options['limit'];
-        $pagingLength = floor($pagingLength)==$pagingLength? floor($pagingLength): floor($pagingLength) + 1;
+        $pagingLength = $total / (int) $options['limit'];
+        $pagingLength = floor($pagingLength) == $pagingLength ? floor($pagingLength) : floor($pagingLength) + 1;
         $res['paging']['length'] = $pagingLength;
-        $res['paging']['current'] = (int)$options['page'];
-        if(((int)$options['page'] * (int)$options['limit']) < $total){
-            $nextQueryString = http_build_query(['page'=> (int)$options['page']+1, 'limit'=> (int)$options['limit']]);
-            $res['paging']['next'] = URL::absolute('/promotion'.'?'.$nextQueryString);
+        $res['paging']['current'] = (int) $options['page'];
+        if (((int) $options['page'] * (int) $options['limit']) < $total) {
+            $nextQueryString = http_build_query(['page' => (int) $options['page'] + 1, 'limit' => (int) $options['limit']]);
+            $res['paging']['next'] = URL::absolute('/promotion' . '?' . $nextQueryString);
         }
 
         // add last_update to response
@@ -155,59 +160,84 @@ class CouponService extends BaseService {
         return $res;
     }
 
-    public function delete($id, Context $ctx){
-        $condition = ['_id'=> MongoHelper::mongoId($id)];
+    public function delete($id, Context $ctx) {
+        $condition = ['_id' => MongoHelper::mongoId($id)];
         return $this->getCollection()->remove($condition);
     }
 
-    public function requestCoupon($id, Context $ctx){
-        $user = $ctx->getUser();
-        if(is_null($user)){
-            throw new ServiceException(ResponseHelper::requireAuthorize());
-        }
-        $item = $this->get($id, $ctx);
-        if(is_null($item)){
-            throw new ServiceException(ResponseHelper::notFound('Not found coupon'));
-        }
-        foreach($item['used_users'] as $value){
-            if($value['user']['_id'] == $user['_id'] && MongoHelper::timeToInt($value['expire']) < time()){
-                return $value;
+    public function requestCoupon($id, Context $ctx) {
+//        $user = $ctx->getUser();
+        
+        $user = UserHelper::getUserDetail();
+//        if (is_null($user)) {
+//            throw new ServiceException(ResponseHelper::requireAuthorize());
+//        }
+        
+        $db = DB::getDB();
+        $now = new \MongoDate();
+        $user_used = $db->coupons->findOne([
+            '_id' => MongoHelper::mongoId($id),
+            'used_users.user._id' => new \MongoId($user['id']),
+        ],['used_users', 'code']);
+        
+        if ($user_used !== null) {
+            $res = [];
+            foreach($user_used['used_users'] as $item){
+                
+//                dump($item);
+                if($item['user']['_id']->{'$id'} == $user['id']){
+                    $res['user'] = [
+                        'id' => $user['id'], 
+                        'display_name' => $item['user']['display_name']
+                    ];
+                    $res['expire'] = MongoHelper::dateToYmd($item['expire']);
+                    $res['created_at'] = MongoHelper::dateToYmd($item['created_at']);
+                }
+                
+            }
+            $res['code'] = $user_used['code'];
+            
+//exit;
+            if(strtotime($res['expire']) > $now->{'sec'}){
+                return $res;
+            }else{
+                return ResponseHelper::error('Used code');
             }
         }
-
-        $code = $this->getCouponCodeCollection()->findOne(['used'=> false]);
-        $this->getCouponCodeCollection()->update(['_id'=> $code['_id']], ['$set'=> ['used'=> true]]);
-
+        
+        $expire = new \DateTime(date('Y-m-d H:i:s', time() + 3600));
         $used_user = [
-            'user'=> ArrayHelper::filterKey(['_id', 'display_name'], $user),
-            'expire'=> time() + 3600,
-            'created_at'=> time(),
-            'code'=> $code['_id']
+            'user' => ArrayHelper::filterKey(['id', 'display_name'], $user),
+            'expire' => new \MongoDate($expire->getTimestamp()),
+            'created_at' => $now,
         ];
-
-        $coupon = $this->get($id, $ctx);
-        foreach($coupon['used_users'] as $key=> $value){
-            if($value['user']['_id']==$user['_id'])
-                return $value;
-        }
-
+        
         $this->getCollection()->update(
-            ['_id'=> MongoHelper::mongoId($id)],
-            ['$push'=> ['used_users'=> $used_user], '$inc'=> ['used_count'=> 1]]
+            ['_id' => MongoHelper::mongoId($id)], ['$push' => ['used_users' => $used_user], '$inc' => ['used_count' => 1]]
         );
-
-        return $used_user;
+        
+        $coupon = $this->get($id, $ctx);
+        $res = [
+            'user' => [
+                'id' => $used_user['user']['id'],
+                'display_name' => $used_user['user']['display_name']
+            ],
+            'expire' => MongoHelper::dateToYmd($used_user['expire']),
+            'created_at' => MongoHelper::dateToYmd($used_user['created_at']),
+            'code' => $coupon['code'],
+        ];
+        return $res;
     }
 
-    public function usedUsers($id, $params, Context $ctx){
+    public function usedUsers($id, $params, Context $ctx) {
         $default = array(
-            "page"=> 1,
-            "limit"=> 15,
+            "page" => 1,
+            "limit" => 15,
         );
         $options = array_merge($default, $params);
 
-        $item = $this->getCollection()->findOne(['_id'=> MongoHelper::mongoId($id)]);
-        if(is_null($item)){
+        $item = $this->getCollection()->findOne(['_id' => MongoHelper::mongoId($id)]);
+        if (is_null($item)) {
             throw new ServiceException(ResponseHelper::notFound());
         }
 
@@ -215,42 +245,42 @@ class CouponService extends BaseService {
         $length = count($item['used_users']);
 
         $res = [
-            'length'=> $length,
-            'total'=> $total,
-            'data'=> $item['used_users'],
-            'paging'=> [
-                'page'=> 1,
-                'limit'=> 1
+            'length' => $length,
+            'total' => $total,
+            'data' => $item['used_users'],
+            'paging' => [
+                'page' => 1,
+                'limit' => 1
             ]
         ];
 
-        $pagingLength = $total/(int)$options['limit'];
-        $pagingLength = floor($pagingLength)==$pagingLength? floor($pagingLength): floor($pagingLength) + 1;
+        $pagingLength = $total / (int) $options['limit'];
+        $pagingLength = floor($pagingLength) == $pagingLength ? floor($pagingLength) : floor($pagingLength) + 1;
         $res['paging']['length'] = $pagingLength;
-        $res['paging']['current'] = (int)$options['page'];
-        if(((int)$options['page'] * (int)$options['limit']) < $total){
-            $nextQueryString = http_build_query(['page'=> (int)$options['page']+1, 'limit'=> (int)$options['limit']]);
-            $res['paging']['next'] = URL::absolute('/coupon/'.MongoHelper::mongoId($id).'/used_users?'.$nextQueryString);
+        $res['paging']['current'] = (int) $options['page'];
+        if (((int) $options['page'] * (int) $options['limit']) < $total) {
+            $nextQueryString = http_build_query(['page' => (int) $options['page'] + 1, 'limit' => (int) $options['limit']]);
+            $res['paging']['next'] = URL::absolute('/coupon/' . MongoHelper::mongoId($id) . '/used_users?' . $nextQueryString);
         }
 
         return $res;
     }
 
-    public function sort($param, Context $ctx = null){
-        foreach($param['id'] as $key=> $id){
+    public function sort($param, Context $ctx = null) {
+        foreach ($param['id'] as $key => $id) {
             $mongoId = MongoHelper::mongoId($id);
-            $seq = $key+$param['offset'];
-            $this->getCollection()->update(array('_id'=> $mongoId), array('$set'=> array('seq'=> $seq)));
+            $seq = $key + $param['offset'];
+            $this->getCollection()->update(array('_id' => $mongoId), array('$set' => array('seq' => $seq)));
         }
 
         // feed update timestamp (last_update)
         UpdatedTimeHelper::update('feed', time());
 
-        return array('success'=> true);
+        return array('success' => true);
     }
 
-    public function incView($id){
-        $this->getCollection()->update(['_id'=> MongoHelper::mongoId($id)], ['$inc'=> ['view_count'=> 1]]);
+    public function incView($id) {
+        $this->getCollection()->update(['_id' => MongoHelper::mongoId($id)], ['$inc' => ['view_count' => 1]]);
     }
 
 }

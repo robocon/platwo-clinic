@@ -27,13 +27,13 @@ class FeedCTL extends BaseCTL {
         try {
             $items = FeedService::getInstance()->gets($this->reqInfo->params(), $this->getCtx());
             
-            foreach ($items['data'] as $key => $item) {
-                MongoHelper::standardIdEntity($item);
-                $item['created_at'] = MongoHelper::timeToInt($item['created_at']);
-                $item['updated_at'] = MongoHelper::timeToInt($item['updated_at']);
-                $item['node'] = NodeHelper::news($item['id']);
-                $items['data'][$key] = $item;
-            }
+//            foreach ($items['data'] as $key => $item) {
+//                MongoHelper::standardIdEntity($item);
+//                $item['created_at'] = MongoHelper::timeToInt($item['created_at']);
+//                $item['updated_at'] = MongoHelper::timeToInt($item['updated_at']);
+//                $item['node'] = NodeHelper::news($item['id']);
+//                $items['data'][$key] = $item;
+//            }
             return $items;
         }
         catch (ServiceException $e){
@@ -48,9 +48,9 @@ class FeedCTL extends BaseCTL {
         try {
             $item = FeedService::getInstance()->add($this->reqInfo->params(), $this->getCtx());
             MongoHelper::standardIdEntity($item);
-            $item['created_at'] = MongoHelper::timeToInt($item['created_at']);
-            $item['updated_at'] = MongoHelper::timeToInt($item['updated_at']);
-            $item['node'] = NodeHelper::news($item['id']);
+            $item['created_at'] = MongoHelper::dateToYmd($item['created_at']);
+            $item['updated_at'] = MongoHelper::dateToYmd($item['updated_at']);
+//            $item['node'] = NodeHelper::news($item['id']);
             return $item;
         }
         catch (ServiceException $e){
@@ -68,9 +68,9 @@ class FeedCTL extends BaseCTL {
             FeedService::getInstance()->incView($this->reqInfo->urlParam('id'), $this->getCtx());
 
             MongoHelper::standardIdEntity($item);
-            $item['created_at'] = MongoHelper::timeToInt($item['created_at']);
-            $item['updated_at'] = MongoHelper::timeToInt($item['updated_at']);
-            $item['node'] = NodeHelper::news($item['id']);
+            $item['created_at'] = MongoHelper::dateToYmd($item['created_at']);
+            $item['updated_at'] = MongoHelper::dateToYmd($item['updated_at']);
+//            $item['node'] = NodeHelper::news($item['id']);
             return $item;
         }
         catch (ServiceException $e){

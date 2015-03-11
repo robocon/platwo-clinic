@@ -46,9 +46,10 @@ class FeedService extends BaseService {
             ['$group'=> ['_id'=> null, 'max'=> ['$max'=> '$seq']]]
         ]);
         $insert['seq'] = (int)@$agg['result'][0]['max'] + 1;
-
-        MongoHelper::setCreatedAt($insert);
-        MongoHelper::setUpdatedAt($insert);
+        
+        $now = new \MongoDate(time());
+        $insert['created_at'] = $now;
+        $insert['updated_at'] = $now;
 
         $this->getCollection()->insert($insert);
         UpdatedTimeHelper::update('feed', time());
@@ -93,7 +94,7 @@ class FeedService extends BaseService {
 
         MongoHelper::standardIdEntity($item);
 
-        $item['node'] = $this->makeNode($item);
+//        $item['node'] = $this->makeNode($item);
 
         return $item;
     }
@@ -122,42 +123,63 @@ class FeedService extends BaseService {
         foreach($cursor as $item){
             $item['id'] = $item['_id']->{'$id'};
             unset($item['_id']);
+            $item['created_key'] = $item['created_at']->{'sec'};
+            $item['created_at'] = MongoHelper::dateToYmd($item['created_at']);
+            $item['updated_at'] = MongoHelper::dateToYmd($item['updated_at']);
             
-            $item['created_at'] = MongoHelper::timeToInt($item['created_at']);
-            $item['updated_at'] = MongoHelper::timeToInt($item['updated_at']);
 //            $item['node'] = NodeHelper::news($item['id']);
 //            $items['data'][$key] = $item;
             
             $item['thumb'] = Image::load($item['thumb'])->toArrayResponse();
-
-            $item['node'] = $this->makeNode($item);
+            $item['type'] = 'feed';
+            unset($item['seq']);
+//            $item['node'] = $this->makeNode($item);
 
             $data[] = $item;
         }
         
-        dump($data);
-        exit;
+        $db = DB::getDB();
+        $promotions = $db->coupons->find([],['name','detail','thumb','created_at','updated_at'])->sort(['_id' => -1]);
+        foreach ($promotions as $item) {
+            $item['id'] = $item['_id']->{'$id'};
+            unset($item['_id']);
+            $item['created_key'] = $item['created_at']->{'sec'};
+            $item['created_at'] = MongoHelper::dateToYmd($item['created_at']);
+            $item['updated_at'] = MongoHelper::dateToYmd($item['updated_at']);
+            $item['thumb'] = Image::load($item['thumb'])->toArrayResponse();
+            $item['type'] = 'coupon';
+            
+            $data[] = $item;
+        }
+        
+        usort($data, function($a, $b) {
+            return $a['created_key'] - $b['created_key'];
+        });
+        
+        $data = array_reverse($data);
+        
         $res = [
-            'length'=> $length,
-            'total'=> $total,
+//            'length'=> $length,
+//            'total'=> $total,
+            'length' => count($data),
             'data'=> $data,
-            'paging'=> [
-                'page'=> (int)$options['page'],
-                'limit'=> (int)$options['limit']
-            ]
+//            'paging'=> [
+//                'page'=> (int)$options['page'],
+//                'limit'=> (int)$options['limit']
+//            ]
         ];
 
         $pagingLength = $total/(int)$options['limit'];
         $pagingLength = floor($pagingLength)==$pagingLength? floor($pagingLength): floor($pagingLength) + 1;
-        $res['paging']['length'] = $pagingLength;
-        $res['paging']['current'] = (int)$options['page'];
+//        $res['paging']['length'] = $pagingLength;
+//        $res['paging']['current'] = (int)$options['page'];
         if(((int)$options['page'] * (int)$options['limit']) < $total){
             $nextQueryString = http_build_query(['page'=> (int)$options['page']+1, 'limit'=> (int)$options['limit']]);
-            $res['paging']['next'] = URL::absolute('/feed'.'?'.$nextQueryString);
+//            $res['paging']['next'] = URL::absolute('/feed'.'?'.$nextQueryString);
         }
 
         $lastUpdate = UpdatedTimeHelper::get('feed');
-        $res['last_updated'] = MongoHelper::timeToInt($lastUpdate['time']);
+//        $res['last_updated'] = MongoHelper::timeToInt($lastUpdate['time']);
         return $res;
     }
 

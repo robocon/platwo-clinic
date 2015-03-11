@@ -7,13 +7,14 @@
  */
 
 namespace Main\CTL;
-use Main\DataModel\Image;
-use Main\Exception\Service\ServiceException;
-use Main\Helper\ArrayHelper;
-use Main\Helper\MongoHelper;
-use Main\Helper\NodeHelper;
-use Main\Service\CouponService;
-use Main\Service\PromotionService;
+use Main\DataModel\Image,
+    Main\Exception\Service\ServiceException,
+    Main\Helper\ArrayHelper,
+    Main\Helper\MongoHelper,
+    Main\Helper\UserHelper,
+    Main\Helper\NodeHelper,
+    Main\Service\CouponService,
+    Main\Service\PromotionService;
 
 /**
  * @Restful
@@ -27,8 +28,8 @@ class CouponCTL extends BaseCTL {
         try {
             $item = CouponService::getInstance()->addCoupon($this->reqInfo->params(), $this->getCtx());
             MongoHelper::standardIdEntity($item);
-            $item['created_at'] = MongoHelper::timeToInt($item['created_at']);
-            $item['updated_at'] = MongoHelper::timeToInt($item['updated_at']);
+            $item['created_at'] = MongoHelper::dateToYmd($item['created_at']);
+            $item['updated_at'] = MongoHelper::dateToYmd($item['updated_at']);
             $item['thumb'] = Image::load($item['thumb'])->toArrayResponse();
 //            ArrayHelper::pictureToThumb($item);
             return $item;
@@ -46,8 +47,8 @@ class CouponCTL extends BaseCTL {
             $items = CouponService::getInstance()->gets($this->reqInfo->params(), $this->getCtx());
             foreach($items['data'] as $key=> $item){
                 MongoHelper::standardIdEntity($item);
-                $item['created_at'] = MongoHelper::timeToInt($item['created_at']);
-                $item['updated_at'] = MongoHelper::timeToInt($item['updated_at']);
+                $item['created_at'] = MongoHelper::dateToYmd($item['created_at']);
+                $item['updated_at'] = MongoHelper::dateToYmd($item['updated_at']);
 //                if($item['type']=="coupon" || true){
                 if(true){
                     $item['thumb'] = Image::load($item['thumb'])->toArrayResponse();
@@ -55,7 +56,7 @@ class CouponCTL extends BaseCTL {
                     $item['used_status'] = "none";
                     foreach($item['used_users'] as $value){
                         if($value['user']['_id'] == $user['_id']){
-                            if(MongoHelper::timeToInt($value['expire']) <= time()){
+                            if(MongoHelper::dateToYmd($value['expire']) <= time()){
                                 $item['used_status'] = "timeout";
                                 break;
                             }
@@ -97,8 +98,8 @@ class CouponCTL extends BaseCTL {
             CouponService::getInstance()->incView($this->reqInfo->urlParam('id'), $this->getCtx());
 
             MongoHelper::standardIdEntity($item);
-            $item['created_at'] = MongoHelper::timeToInt($item['created_at']);
-            $item['updated_at'] = MongoHelper::timeToInt($item['updated_at']);
+            $item['created_at'] = MongoHelper::dateToYmd($item['created_at']);
+            $item['updated_at'] = MongoHelper::dateToYmd($item['updated_at']);
 //            if($item['type']=="coupon" || true){
             if(true){
                 $item['thumb'] = Image::load($item['thumb'])->toArrayResponse();
@@ -106,7 +107,7 @@ class CouponCTL extends BaseCTL {
                 $item['used_status'] = "none";
                 foreach($item['used_users'] as $value){
                     if($value['user']['_id'] == $user['_id']){
-                        if(MongoHelper::timeToInt($value['expire']) <= time()){
+                        if(MongoHelper::dateToYmd($value['expire']) <= time()){
                             $item['used_status'] = "timeout";
                             break;
                         }
@@ -180,6 +181,12 @@ class CouponCTL extends BaseCTL {
      */
     public function couponRequest(){
         try {
+            
+            $token = UserHelper::check_token();
+            if($token === false){
+                throw new ServiceException(ResponseHelper::error('Invalid user token'));
+            }
+            
             $res = CouponService::getInstance()->requestCoupon($this->reqInfo->urlParam('id'), $this->getCtx());
             return $res;
         }

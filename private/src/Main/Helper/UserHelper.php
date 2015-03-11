@@ -18,10 +18,10 @@ class UserHelper {
     public static $user_id = null;
     public static $default_location = null;
     private static $group_role = null;
-    private $data = null;
+    private static $data = null;
     
     public function __construct($data_user = null) {
-        $this->data = $data_user;
+//        $this->data = $data_user;
     }
     
     public static function defaultSetting(){
@@ -65,7 +65,7 @@ class UserHelper {
         $db = DB::getDB();
         $user = $db->users->findOne([
             'access_token' => $token
-        ],['_id','access_token','email','username','group_role','default_location']);
+        ],['_id','access_token','email','username','display_name','group_role','default_location']);
         
         if ($user !== null) {
             $user['id'] = $user['_id']->{'$id'};
@@ -79,16 +79,23 @@ class UserHelper {
                 ]);
 
                 self::$group_role = $role_perm['perms'];
+                $user['perms'] = $role_perm['perms'];
             }
             
             if (isset($user['default_location'])) {
                 self::$default_location = $user['default_location'];
             }
             
+            self::$data = $user;
+            
             return true;
         }
         
         return false;
+    }
+    
+    public static function getUserDetail(){
+        return self::$data;
     }
     
     public static function hasPermission($name, $action) {
