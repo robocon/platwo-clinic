@@ -369,7 +369,7 @@ class UserCTL extends BaseCTL {
      * {"success":true}
      * 
      * @PUT
-     * @uri /profile/[h:user_id]
+     * @uri /profile
      */
     public function update_profile() {
         try {
@@ -379,58 +379,88 @@ class UserCTL extends BaseCTL {
             }
             
             $params = $this->reqInfo->params();
-            $user_id = $this->reqInfo->urlParam('user_id');
+//            $user_id = $this->reqInfo->urlParam('user_id');
             
             $res = false;
             
-            /*
-            if ($action === 'picture') {
-                $img_res = UserService::getInstance()->update_profile_picture($user_id, $this->reqInfo->param('picture'), $this->getCtx());
+            if (isset($params['picture'])) {
+                
+                $img_res = UserService::getInstance()->update_profile_picture($params['picture'], $this->getCtx());
                 $res = ['success' => $img_res['success'], 'picture' => $img_res['picture']];
                 
-            } elseif ($action === 'display_name') {
-                $response = UserService::getInstance()->update_display_name($user_id, $this->reqInfo->param('display_name'), $this->getCtx());
+            } elseif (isset($params['display_name'])) {
+                
+                $response = UserService::getInstance()->update_user_profile($params['display_name'], 'display_name', $this->getCtx());
                 $res = ['success' => $response];
-            } elseif ($action === 'detail') {
+                
+            } /*elseif ($action === 'detail') {
                 $response = UserService::getInstance()->update_detail($user_id, $this->reqInfo->param('detail'), $this->getCtx());
                 $res = ['success' => $response];
-            } elseif ($action === 'gender') {
-                $response = UserService::getInstance()->update_gender($user_id, $this->reqInfo->param('gender'), $this->getCtx());
+            } */elseif (isset($params['gender'])) {
+                
+                $response = UserService::getInstance()->update_user_profile($params['gender'], 'gender', $this->getCtx());
                 $res = ['success' => $response];
-            } elseif ($action === 'birth_date') {
-                $response = UserService::getInstance()->update_birth_date($user_id, $this->reqInfo->param('birth_date'), $this->getCtx());
+                
+            } elseif (isset($params['birth_date'])) {
+                
+                $params['birth_date'] = new \MongoDate(strtotime($params['birth_date']." 00:00:00"));
+                $response = UserService::getInstance()->update_user_profile($params['birth_date'], 'birth_date', $this->getCtx());
                 $res = ['success' => $response];
-            } elseif ($action === 'username') {
-                $response = UserService::getInstance()->update_username($user_id, $this->reqInfo->param('username'), $this->getCtx());
+                
+            } elseif (isset($params['username'])) {
+                
+                $response = UserService::getInstance()->update_username($params['username'], $this->getCtx());
                 $res = ['success' => $response];
-            } elseif ($action === 'email') {
-                $response = UserService::getInstance()->update_email($user_id, $this->reqInfo->param('email'), $this->getCtx());
+                
+            } elseif (isset($params['email'])) {
+                
+                $response = UserService::getInstance()->update_email($params['email'], $this->getCtx());
                 $res = ['success' => $response];
-            } elseif ($action === 'password') {
-                $response = UserService::getInstance()->update_password($user_id, $this->reqInfo->params(), $this->getCtx());
+                
+            } elseif (isset($params['website'])) {
+                
+                $response = UserService::getInstance()->update_user_profile($params['website'], 'website', $this->getCtx());
                 $res = ['success' => $response];
-            } elseif ($action === 'website') {
-                $response = UserService::getInstance()->update_website($user_id, $this->reqInfo->param('website'), $this->getCtx());
+                
+            } elseif (isset($params['mobile'])) {
+                
+                $response = UserService::getInstance()->update_user_profile($params['mobile'], 'mobile', $this->getCtx());
                 $res = ['success' => $response];
-            } elseif ($action === 'phone') {
-                $response = UserService::getInstance()->update_phone($user_id, $this->reqInfo->param('phone'), $this->getCtx());
-                $res = ['success' => $response];
-            } else
-            */
-            if (isset($params['fb_name'])) {
+                
+            } elseif (isset($params['fb_name'])) {
 
-                $response = UserService::getInstance()->update_user_profile($user_id, $params['fb_name'], 'fb_name', $this->getCtx());
+                $response = UserService::getInstance()->update_user_profile($params['fb_name'], 'fb_name', $this->getCtx());
                 $res = ['success' => $response];
                 
             } elseif (isset($params['hn_number'])) {
                 
-                $response = UserService::getInstance()->update_user_profile($user_id, $params['hn_number'], 'hn_number', $this->getCtx());
+                $response = UserService::getInstance()->update_user_profile($params['hn_number'], 'hn_number', $this->getCtx());
                 $res = ['success' => $response];
                     
             } else {
                 throw new ServiceException(ResponseHelper::error('Invalid field :('));
             }
             
+            return $res;
+            
+        } catch (ServiceException $e) {
+            return $e->getResponse();
+        }
+    }
+    
+    /**
+     * @PUT
+     * @uri /profile/password
+     */
+    public function update_password() {
+        try {
+            
+            if(UserHelper::hasPermission('profile', 'update') === false){
+                throw new ServiceException(ResponseHelper::notAuthorize('Access deny'));
+            }
+            
+            $response = UserService::getInstance()->update_password($this->reqInfo->params(), $this->getCtx());
+            $res = ['success' => $response];
             return $res;
             
         } catch (ServiceException $e) {

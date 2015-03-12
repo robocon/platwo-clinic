@@ -707,11 +707,14 @@ HTML;
         return $item_pictures;
     }
     
-    public function update_profile_picture($user_id, $picture, Context $ctx) {
+    public function update_profile_picture($picture, Context $ctx) {
+        
+        $user = UserHelper::getUserDetail();
         $params = [
-            'user_id' => $user_id,
+            'user_id' => $user['id'],
             'picture' => $picture
         ];
+        
         $v = new Validator($params);
         $v->rule('required', ["user_id", "picture"]);
 
@@ -721,13 +724,13 @@ HTML;
         
         $img = Image::upload($params['picture']);
         $set['picture'] = $img->toArray();
-            
+        
         $set = ArrayHelper::ArrayGetPath($set);
         $res = $this->getCollection()->update(['_id'=> new \MongoId($params['user_id'])], ['$set'=> $set]);
         if ($res['n'] == 0) {
             return ['success' => false];
         }
-        $img_res['picture'] = Image::load($set['picture']);
+        $img_res['picture'] = Image::load(['id' => $set['picture.id'],'width' => $set['picture.width'],'height' => $set['picture.height']]);
         $img_res['success'] = true;
         return $img_res;
     }
@@ -815,10 +818,10 @@ HTML;
         return true;
     }
     
-    public function update_username($user_id, $username, Context $ctx) {
-
+    public function update_username($username, Context $ctx) {
+        $user = UserHelper::getUserDetail();
         $params = [
-            'user_id' => $user_id,
+            'user_id' => $user['id'],
             'username' =>  $username
         ];
         
@@ -832,7 +835,7 @@ HTML;
         
         $check_username = $this->getCollection()->findOne([
             'username' => $username,
-            '_id' => [ '$ne' => new \MongoId($user_id) ]
+            '_id' => [ '$ne' => new \MongoId($user['id']) ]
         ],['_id']);
         
         if ($check_username !== null) {
@@ -847,10 +850,10 @@ HTML;
         return true;
     }
     
-    public function update_email($user_id, $email, Context $ctx) {
-        
+    public function update_email($email, Context $ctx) {
+        $user = UserHelper::getUserDetail();
         $params = [
-            'user_id' => $user_id,
+            'user_id' => $user['id'],
             'email' =>  $email
         ];
         
@@ -864,7 +867,7 @@ HTML;
         
         $check_email = $this->getCollection()->findOne([
             'email' => $email,
-            '_id' => [ '$ne' => new \MongoId($user_id) ]
+            '_id' => [ '$ne' => new \MongoId($user['id']) ]
         ],['_id']);
         
         if ($check_email !== null) {
@@ -879,10 +882,9 @@ HTML;
         return true;
     }
     
-    public function update_password($user_id, $params, Context $ctx) {
-        
+    public function update_password($params, Context $ctx) {
+        $user_detail = UserHelper::getUserDetail();
         $data = [
-            'user_id' => $user_id,
             'password' =>  $params['password'],
             'new_password' =>  $params['new_password'],
             'confirm_password' =>  $params['confirm_password'],
@@ -904,22 +906,22 @@ HTML;
         }
         
         $user = $this->getCollection()->findOne([
-            '_id' => new \MongoId($user_id)
+            '_id' => new \MongoId($user_detail['id'])
         ],['private_key', 'password']);
         if ($user === null) {
             throw new ServiceException(ResponseHelper::error('Invalid user'));
         }
         
         // Check old password was match from database?
-        if(isset($user['password'])){
+        if(isset($user['password']) && !empty($user['password'])){
             $old_password = UserHelper::generate_password($data['password'], $user['private_key']);
-            if($old_password !== $user['new_password']){
+            if($old_password !== $user['password']){
                 throw new ServiceException(ResponseHelper::error('Invalid password'));
             }
         }
         
-        $password = UserHelper::generate_password($data['password'], $user['private_key']);
-        $res = $this->getCollection()->update(['_id'=> new \MongoId($user_id)], ['$set'=> ['password' => $password]]);
+        $password = UserHelper::generate_password($data['new_password'], $user['private_key']);
+        $res = $this->getCollection()->update(['_id'=> new \MongoId($user_detail['id'])], ['$set'=> ['password' => $password]]);
         if ($res['n'] == 0) {
             return false;
         }
@@ -1041,10 +1043,11 @@ HTML;
         return true;
     }
     
-    public function update_user_profile($user_id, $value, $key, Context $ctx) {
+    public function update_user_profile($value, $key, Context $ctx) {
         
+        $user = UserHelper::getUserDetail();
         $params = [
-            'user_id' => $user_id,
+            'user_id' => $user['id'],
             $key => $value,
         ];
         
@@ -1054,7 +1057,7 @@ HTML;
             throw new ServiceException(ResponseHelper::validateError($v->errors()));
         }
         
-        $res = $this->getCollection()->update(['_id'=> new \MongoId($user_id)], ['$set' => [$key => $value]]);
+        $res = $this->getCollection()->update(['_id'=> new \MongoId($user['id'])], ['$set' => [$key => $value]]);
         if ($res['n'] == 0) {
             return false;
         }

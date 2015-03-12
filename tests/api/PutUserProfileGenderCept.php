@@ -1,11 +1,10 @@
 <?php 
-$user_id = '54ba29c210f0edb8048b457a';
-
 $I = new ApiTester($scenario);
 $I->wantTo('Update User Profile Gender');
 $I->haveHttpHeader('Content-Type', 'application/x-www-form-urlencoded');
-$I->sendPUT('user/profile/'.$user_id.'/gender', [
-    'gender' => 'female'
+$I->setHeader('access-token', '10d96485dd0a326cee8bd159689c9b8a36d29365cee7b0e8185d34841acfbdbf');
+$I->sendPUT('user/profile', [
+    'gender' => 'Male'
     ]);
 $I->seeResponseCodeIs(200);
 $I->seeResponseIsJson();

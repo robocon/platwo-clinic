@@ -141,7 +141,7 @@ class AppointmentService extends BaseService {
     public function get_datetime(Context $ctx) {
         
         $db = DB::getDB();
-        $find = $db->config->findOne([],['date','time_start','time_end']);
+        $find = $db->config->findOne([],['date','time_start','time_end','repeat']);
         unset($find['_id']);
         return $find;
     }
