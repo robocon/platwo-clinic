@@ -122,6 +122,11 @@ class RequestInfo {
      * @return bool
      */
     public static function getToken() {
-        return self::getHeader('Access-Token');
+        $header_token = self::getHeader('access-token');
+        if($header_token === false){
+            $header_token = isset($_POST['access_token']) ? filter_input(INPUT_POST, 'access_token', FILTER_SANITIZE_STRING) : false ;
+        }
+        
+        return $header_token;
     }
 }
