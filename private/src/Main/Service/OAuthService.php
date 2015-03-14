@@ -190,26 +190,53 @@ class OAuthService extends BaseService {
         if(!isset($item['password']) || $item['password'] != $check_user_password){
             throw new ServiceException(ResponseHelper::error('Wrong password'));
         }
-        if(!isset($item['access_token'])){
-            $item['access_token'] = UserHelper::generate_token(MongoHelper::standardId($item['_id']), $item['private_key']);
-            $this->getUsersCollection()->update(['_id'=> $item['_id']], ['$set'=> ['access_token'=> $item['access_token']]]);
-            $this->getUsersCollection()->ensureIndex(['access_token'=> 1, 'app_id'=> 1]);
-        }
-
-        // remember device token
-        if(isset($params['ios_device_token'])){
-            if(isset($params['ios_device_token']['type']) && isset($params['ios_device_token']['key'])){
-                $this->getUsersCollection()->update(['_id'=> $item['_id']], ['$addToSet'=> ['ios_device_token'=> $params['ios_device_token'] ]]);
+        
+        if (isset($params['ios_device_token'])) {
+            $check_device_token = false;
+            foreach($item['ios_device_token'] as $device_token){
+                if($device_token['key'] == $params['ios_device_token']['key']){
+                    $check_device_token = true;
+                }
+            }
+            
+            if($check_device_token === false){
+                $this->getUsersCollection()->update(['_id' => $item['_id']],[
+                    '$addToSet' => [
+                        'ios_device_token' => $params['ios_device_token']
+                    ]
+                ]);
             }
         }
-        if(isset($params['android_token'])){
-            $this->getUsersCollection()->update(['_id'=> $item['_id']], ['$addToSet'=> ['android_token'=> $params['android_token'] ]]);
+        
+        if (isset($params['android_token'])) {
+            $check_device_token = false;
+            foreach($item['android_token'] as $device_token){
+                if($device_token == $params['android_token']){
+                    $check_device_token = true;
+                }
+            }
+            
+            if($check_device_token === false){
+                $this->getUsersCollection()->update(['_id' => $item['_id']],[
+                    '$addToSet' => [
+                        'android_token' => $params['android_token']
+                    ]
+                ]);
+            }
         }
-
-        // set last login
-        $this->getUsersCollection()->update(['_id'=> $item['_id']], ['$set'=> ['last_login'=> new \MongoTimestamp()]]);
-
-        return ['user_id'=> MongoHelper::standardId($item['_id']), 'access_token'=> $item['access_token'], 'type'=> $item['type']];
+        
+        $this->getUsersCollection()->update(['_id' => $item['_id']],[
+            '$set' => [
+                'last_login' => new \MongoDate()
+            ]
+        ]);
+        
+        $res = array(
+            'user_id'=> MongoHelper::standardId($item['_id']), 
+            'access_token'=> $item['access_token'], 
+            'type'=> $item['type']
+        );
+        return $res;
     }
 
     public function generateToken($id){
