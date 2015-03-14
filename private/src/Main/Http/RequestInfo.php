@@ -131,7 +131,21 @@ class RequestInfo {
     public static function getToken() {
         $header_token = self::getHeader('access-token');
         if($header_token === false){
-            $header_token = isset($_POST['access_token']) ? filter_input(INPUT_POST, 'access_token', FILTER_SANITIZE_STRING) : false ;
+
+            $method = $_SERVER['REQUEST_METHOD'];
+            if($method=='POST'){
+                $params = $_POST;
+            }
+            else if($method=='PUT' || $method == 'DELETE'){
+                $put = array();
+                parse_str(file_get_contents("php://input"), $put);
+                $params = $put;
+            }
+            else {
+                $params = $_GET;
+            }
+            
+            $header_token = isset($params['access_token']) ? (string)$params['access_token'] : false ;
         }
         
         return $header_token;
