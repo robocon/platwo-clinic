@@ -111,8 +111,15 @@ class RequestInfo {
      * @return string
      */
     public static function getHeader($name){
-        $header = apache_request_headers();
-        $res = isset($header[$name]) ? $header[$name] : false ;
+        $headers = apache_request_headers();
+        
+        $new_header = [];
+        foreach($headers as $key => $value){
+            $key_name = strtolower($key);
+            $new_header[$key_name] = $value;
+        }
+        
+        $res = isset($new_header[$name]) ? $new_header[$name] : false ;
         return $res;
     }
     

@@ -730,8 +730,13 @@ HTML;
         if ($res['n'] == 0) {
             return ['success' => false];
         }
-        $img_res['picture'] = Image::load(['id' => $set['picture.id'],'width' => $set['picture.width'],'height' => $set['picture.height']]);
+        
+        $img_load = Image::load(['id' => $set['picture.id'],'width' => $set['picture.width'],'height' => $set['picture.height']]);
+        $img_array_res = $img_load->toArrayResponse();
+
+        $img_res['picture'] = $img_array_res;
         $img_res['success'] = true;
+
         return $img_res;
     }
     
