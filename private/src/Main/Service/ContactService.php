@@ -37,7 +37,7 @@ class ContactService extends BaseService {
     }
 
     public function get(Context $ctx){
-        $contact = $this->getCollection()->findOne([], ['phone','website','email','facebook','line','map']);
+        $contact = $this->getCollection()->findOne([], ['phone','website','email','facebook','line','location_name','map']);
         if(is_null($contact)){
             throw new ServiceException(ResponseHelper::notFound());
         }
