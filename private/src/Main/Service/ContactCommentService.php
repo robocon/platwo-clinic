@@ -62,13 +62,19 @@ class ContactCommentService extends BaseService {
 //        if(is_null($user)){
 //            throw new ServiceException(ResponseHelper::requireAuthorize());
 //        }
+        
+        $user_param = [];
+        if($user !== null){
+            $user_param = [
+                "id"=> $user['id'],
+                "display_name"=> $user['display_name']
+            ];
+        }
+        
         $entity = array(
             "message"=> $params['message'],
             "created_at"=> $now,
-            "user"=> [
-                "id"=> $user['id'],
-                "display_name"=> $user['display_name']
-            ]
+            "user"=> $user_param
         );
 
         $this->getCollection()->insert($entity);

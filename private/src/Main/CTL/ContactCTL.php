@@ -13,6 +13,7 @@ use Main\DataModel\Image,
     Main\Helper\NodeHelper,
     Main\Helper\UserHelper,
     Main\Helper\ResponseHelper,
+    Main\Http\RequestInfo,
     Main\Service\ContactCommentService,
     Main\Service\ContactService;
 
@@ -197,8 +198,16 @@ class ContactCTL extends BaseCTL {
     public function addComment(){
         try {
 
-            if(UserHelper::hasPermission('contact_comment', 'add') === false){
-                throw new ServiceException(ResponseHelper::notAuthorize('Access deny'));
+//            if(UserHelper::hasPermission('contact_comment', 'add') === false){
+//                throw new ServiceException(ResponseHelper::notAuthorize('Access deny'));
+//            }
+            
+            $token = RequestInfo::getToken();
+            if($token !== false){
+                $check_token = UserHelper::check_token();
+                if($check_token === false){
+                    throw new ServiceException(ResponseHelper::error('Invalid user token'));
+                }
             }
 
             $comment = ContactCommentService::getInstance()->add($this->reqInfo->params(), $this->getCtx());
