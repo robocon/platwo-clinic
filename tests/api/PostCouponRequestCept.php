@@ -12,9 +12,9 @@ $I->sendPOST('coupon/request/54fe9fdf10f0ed350a8b456e', [
 ]);
 $I->seeResponseCodeIs(200);
 $I->seeResponseIsJson();
-$id = $I->grabDataFromJsonResponse('id');
+$user = $I->grabDataFromJsonResponse('user');
 $I->seeResponseContainsJson([
-    'id' => $id
+    'user' => $user
 ]);
 
 

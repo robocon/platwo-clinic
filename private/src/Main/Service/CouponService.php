@@ -176,7 +176,7 @@ class CouponService extends BaseService {
         $now = new \MongoDate();
         $user_used = $db->coupons->findOne([
             '_id' => MongoHelper::mongoId($id),
-            'used_users.user._id' => new \MongoId($user['id']),
+            'used_users.user.id' => new \MongoId($user['id']),
         ],['used_users', 'code']);
         
         if ($user_used !== null) {

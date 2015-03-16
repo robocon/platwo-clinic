@@ -13,6 +13,7 @@ use Main\DataModel\Image,
     Main\Helper\MongoHelper,
     Main\Helper\UserHelper,
     Main\Helper\NodeHelper,
+    Main\Http\RequestInfo,
     Main\Service\CouponService,
     Main\Service\PromotionService;
 
@@ -44,41 +45,38 @@ class CouponCTL extends BaseCTL {
      */
     public function gets(){
         try {
+            
+            $token = RequestInfo::getToken();
+            $user = false;
+            if($token){
+                $check_user = UserHelper::check_token();
+                if($check_user !== false){
+                    $user = UserHelper::getUserDetail();
+                }
+            }
+            
             $items = CouponService::getInstance()->gets($this->reqInfo->params(), $this->getCtx());
-            foreach($items['data'] as $key=> $item){
+            foreach($items['data'] as $key => $item){
                 MongoHelper::standardIdEntity($item);
                 $item['created_at'] = MongoHelper::dateToYmd($item['created_at']);
                 $item['updated_at'] = MongoHelper::dateToYmd($item['updated_at']);
-//                if($item['type']=="coupon" || true){
-                if(true){
+                
                     $item['thumb'] = Image::load($item['thumb'])->toArrayResponse();
-                    $user = $this->getCtx()->getUser();
                     $item['used_status'] = "none";
-                    foreach($item['used_users'] as $value){
-                        if($value['user']['_id'] == $user['_id']){
-                            if(MongoHelper::dateToYmd($value['expire']) <= time()){
-                                $item['used_status'] = "timeout";
+                    
+                    if($user !== false){
+                        foreach($item['used_users'] as $value){
+                            if($value['user']['id'] == $user['id']){
+                                if(MongoHelper::dateToYmd($value['expire']) <= time()){
+                                    $item['used_status'] = "timeout";
+                                    break;
+                                }
+                                $item['used_status'] = "countdown";
                                 break;
                             }
-                            $item['used_status'] = "countdown";
-                            break;
                         }
                     }
-                    unset($item['used_users']);
-                }
-                else {
-                    $item['node'] = NodeHelper::promotion($item['id']);
-                    ArrayHelper::pictureToThumb($item);
-                }
-
-                // translate
-//                if($this->getCtx()->getTranslate()){
-//                    ArrayHelper::translateEntity($item, $this->getCtx()->getLang());
-//                }
-
-                // make node
-//                $item['node'] = NodeHelper::place($item['id']);
-
+                unset($item['used_users']);
                 $items['data'][$key] = $item;
             }
             return $items;
@@ -94,6 +92,16 @@ class CouponCTL extends BaseCTL {
      */
     public function get(){
         try {
+            
+            $token = RequestInfo::getToken();
+            $user = false;
+            if($token){
+                $check_user = UserHelper::check_token();
+                if($check_user !== false){
+                    $user = UserHelper::getUserDetail();
+                }
+            }
+            
             $item = CouponService::getInstance()->get($this->reqInfo->urlParam('id'), $this->getCtx());
             CouponService::getInstance()->incView($this->reqInfo->urlParam('id'), $this->getCtx());
 
@@ -101,26 +109,29 @@ class CouponCTL extends BaseCTL {
             $item['created_at'] = MongoHelper::dateToYmd($item['created_at']);
             $item['updated_at'] = MongoHelper::dateToYmd($item['updated_at']);
 //            if($item['type']=="coupon" || true){
-            if(true){
+//            if(true){
                 $item['thumb'] = Image::load($item['thumb'])->toArrayResponse();
-                $user = $this->getCtx()->getUser();
+//                $user = $this->getCtx()->getUser();
                 $item['used_status'] = "none";
-                foreach($item['used_users'] as $value){
-                    if($value['user']['_id'] == $user['_id']){
-                        if(MongoHelper::dateToYmd($value['expire']) <= time()){
-                            $item['used_status'] = "timeout";
+                
+                if($user !== false){
+                    foreach($item['used_users'] as $value){
+                        if($value['user']['id'] == $user['id']){
+                            if(MongoHelper::dateToYmd($value['expire']) <= time()){
+                                $item['used_status'] = "timeout";
+                                break;
+                            }
+                            $item['used_status'] = "countdown";
                             break;
                         }
-                        $item['used_status'] = "countdown";
-                        break;
                     }
                 }
                 unset($item['used_users']);
-            }
-            else {
-                $item['node'] = NodeHelper::promotion($item['id']);
-                ArrayHelper::pictureToThumb($item);
-            }
+//            }
+//            else {
+//                $item['node'] = NodeHelper::promotion($item['id']);
+//                ArrayHelper::pictureToThumb($item);
+//            }
 
             // translate
 //            if($this->getCtx()->getTranslate()){
