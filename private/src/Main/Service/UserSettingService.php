@@ -117,6 +117,12 @@ class UserSettingService extends BaseService {
         }  elseif ($params['field']=='birth') {
             $key = 'setting.show_birth_date';
             
+        } elseif ($params['field']=='update') {
+            $key = 'setting.notify_update';
+            
+        } elseif ($params['field']=='message') {
+            $key = 'setting.notify_message';
+            
         } else{
             throw new ServiceException(ResponseHelper::error('Invalid field'));
         }
