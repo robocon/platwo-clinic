@@ -176,15 +176,14 @@ class CouponService extends BaseService {
         $now = new \MongoDate();
         $user_used = $db->coupons->findOne([
             '_id' => MongoHelper::mongoId($id),
-            'used_users.user.id' => new \MongoId($user['id']),
+            'used_users.user.id' => $user['id'],
         ],['used_users', 'code']);
         
         if ($user_used !== null) {
             $res = [];
             foreach($user_used['used_users'] as $item){
                 
-//                dump($item);
-                if($item['user']['_id']->{'$id'} == $user['id']){
+                if($item['user']['id'] == $user['id']){
                     $res['user'] = [
                         'id' => $user['id'], 
                         'display_name' => $item['user']['display_name']
@@ -196,7 +195,6 @@ class CouponService extends BaseService {
             }
             $res['code'] = $user_used['code'];
             
-//exit;
             if(strtotime($res['expire']) > $now->{'sec'}){
                 return $res;
             }else{
