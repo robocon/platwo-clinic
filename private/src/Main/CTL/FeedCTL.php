@@ -124,4 +124,57 @@ class FeedCTL extends BaseCTL {
             return $e->getResponse();
         }
     }
+    
+    /**
+     * @GET
+     * @uri /overview
+     */
+    public function get_overview() {
+        try {
+            
+            $res = FeedService::getInstance()->get_overview($this->getCtx());
+            return $res;
+            
+        } catch (ServiceException $e) {
+            return $e->getResponse();
+        }
+    }
+    
+    /**
+     * @PUT
+     * @uri /overview
+     */
+    public function overview() {
+        try {
+            
+            if(UserHelper::hasPermission('feed_overview', 'edit') === false){
+                throw new ServiceException(ResponseHelper::notAuthorize('Access deny'));
+            }
+            
+            $res = FeedService::getInstance()->overview($this->reqInfo->params(), $this->getCtx());
+            return $res;
+            
+        } catch (ServiceException $e) {
+            return $e->getResponse();
+        }
+    }
+    
+    /**
+     * @POST
+     * @uri /overview/picture
+     */
+    public function overview_picture() {
+        try {
+            
+            if(UserHelper::hasPermission('feed_overview', 'add') === false){
+                throw new ServiceException(ResponseHelper::notAuthorize('Access deny'));
+            }
+            
+            $res = FeedService::getInstance()->overview_picture($this->reqInfo->params(), $this->getCtx());
+            return $res;
+            
+        } catch (ServiceException $e) {
+            return $e->getResponse();
+        }
+    }
 }

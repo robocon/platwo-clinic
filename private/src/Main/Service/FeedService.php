@@ -222,4 +222,46 @@ class FeedService extends BaseService {
     public function incView($id){
         $this->getCollection()->update(['_id'=> MongoHelper::mongoId($id)], ['$inc'=> ['view_count'=> 1]]);
     }
+    
+    public function get_overview(Context $ctx) {
+        $db = DB::getDB();
+        $item = $db->feed_overview->findOne();
+        $item['length'] = count($item['pictures']);
+        unset($item['_id']);
+        return $item;
+    }
+    
+    public function overview($params, Context $ctx) {
+        
+        $v = new Validator($params);
+        $v->rule('required', ['details']);
+
+        if(!$v->validate()){
+            throw new ServiceException(ResponseHelper::validateError($v->errors()));
+        }
+        
+        $db = DB::getDB();
+        $item = $db->feed_overview->findOne();
+        $db->feed_overview->update(['_id' => $item['_id']],['$set' => $params]);
+        
+        return $params;
+    }
+    
+    public function overview_picture($params, Context $ctx) {
+        
+        $v = new Validator($params);
+        $v->rule('required', ['picture']);
+
+        if(!$v->validate()){
+            throw new ServiceException(ResponseHelper::validateError($v->errors()));
+        }
+
+        $picture = Image::upload($params['picture'])->toArray();
+        $db = DB::getDB();
+        $item = $db->feed_overview->findOne();
+        $db->feed_overview->update(['_id' => $item['_id']],['$addToSet' => ['pictures' => $picture]]);
+        
+        $res = Image::load($picture)->toArrayResponse();
+        return $res;
+    }
 }
