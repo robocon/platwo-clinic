@@ -16,6 +16,6 @@ class URL {
     }
 
     public static function share($url){
-        return "http://pla2app.com/thaweeyont/share".$url;
+        return "http://pla2app.com/clinic/share".$url;
     }
 }

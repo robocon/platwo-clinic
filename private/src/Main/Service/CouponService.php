@@ -77,6 +77,11 @@ class CouponService extends BaseService {
         if (is_null($item)) {
             throw new ServiceException(ResponseHelper::notFound());
         }
+        
+        $item['id'] = $item['_id']->{'$id'};
+        $item['node'] = $this->makeCouponNode($item);
+        unset($item['id']);
+        
         return $item;
     }
 
@@ -127,6 +132,9 @@ class CouponService extends BaseService {
         $data = [];
 
         foreach ($cursor as $item) {
+            $item['id'] = $item['_id']->{'$id'};
+            $item['node'] = $this->makeCouponNode($item);
+            unset($item['id']);
             $data[] = $item;
         }
 
@@ -280,4 +288,9 @@ class CouponService extends BaseService {
         $this->getCollection()->update(['_id' => MongoHelper::mongoId($id)], ['$inc' => ['view_count' => 1]]);
     }
 
+    public function makeCouponNode($item){
+        return array(
+            "share"=> URL::share('/coupon.php?id='.$item['id'])
+        );
+    }
 }

@@ -23,7 +23,7 @@ class NodeHelper {
             'share'=> URL::share('/promotion.php?id='.$id)
         ];
     }
-
+    
     public static function place($id){
         $id = MongoHelper::standardId($id);
         return [
@@ -42,7 +42,7 @@ class NodeHelper {
         $id = MongoHelper::standardId($id);
         return [
             'picture'=> URL::absolute('/service/'.$id.'/picture'),
-//            'share'=> URL::share('/service.php?id='.$id)
+            'share'=> URL::share('/service.php?id='.$id)
         ];
     }
 

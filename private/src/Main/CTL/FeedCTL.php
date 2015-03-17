@@ -68,9 +68,10 @@ class FeedCTL extends BaseCTL {
             FeedService::getInstance()->incView($this->reqInfo->urlParam('id'), $this->getCtx());
 
             MongoHelper::standardIdEntity($item);
+            
             $item['created_at'] = MongoHelper::dateToYmd($item['created_at']);
             $item['updated_at'] = MongoHelper::dateToYmd($item['updated_at']);
-//            $item['node'] = NodeHelper::news($item['id']);
+            $item['node'] = NodeHelper::news($item['id']);
             return $item;
         }
         catch (ServiceException $e){

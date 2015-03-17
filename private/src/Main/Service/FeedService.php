@@ -133,7 +133,7 @@ class FeedService extends BaseService {
             $item['thumb'] = Image::load($item['thumb'])->toArrayResponse();
             $item['type'] = 'feed';
             unset($item['seq']);
-//            $item['node'] = $this->makeNode($item);
+            $item['node'] = $this->makeNode($item);
 
             $data[] = $item;
         }
@@ -148,7 +148,7 @@ class FeedService extends BaseService {
             $item['updated_at'] = MongoHelper::dateToYmd($item['updated_at']);
             $item['thumb'] = Image::load($item['thumb'])->toArrayResponse();
             $item['type'] = 'coupon';
-            
+            $item['node'] = $this->makeCouponNode($item);
             $data[] = $item;
         }
         
@@ -209,7 +209,13 @@ class FeedService extends BaseService {
 
     public function makeNode($item){
         return array(
-            "share"=> URL::share('')
+            "share"=> URL::share('/news.php?id='.$item['id'])
+        );
+    }
+    
+    public function makeCouponNode($item){
+        return array(
+            "share"=> URL::share('/coupon.php?id='.$item['id'])
         );
     }
 
