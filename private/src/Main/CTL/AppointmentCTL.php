@@ -24,7 +24,12 @@ class AppointmentCTL extends BaseCTL {
             }
             
             $item = AppointmentService::getInstance()->check_password($this->reqInfo->param('password'), $this->getCtx());
-            return ['success' => $item];
+            
+            if($item !== true){
+                return $item;
+            }else{
+                return ['success' => $item];
+            }
             
         } catch (ServiceException $e) {
             return $e->getResponse();
