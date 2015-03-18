@@ -29,13 +29,15 @@ class ServiceCTL extends BaseCTL {
         try {
             $item = ServiceService::getInstance()->addFolder($this->reqInfo->params(), $this->getCtx());
             MongoHelper::standardIdEntity($item);
-            $item['created_at'] = MongoHelper::timeToInt($item['created_at']);
-            $item['updated_at'] = MongoHelper::timeToInt($item['updated_at']);
+            
+            $item['created_at'] = MongoHelper::dateToYmd($item['created_at']);
+            $item['updated_at'] = MongoHelper::dateToYmd($item['updated_at']);
 //            if($this->getCtx()->getTranslate()){
 //                ArrayHelper::translateEntity($item, $this->getCtx()->getLang());
 //            }
             $item['thumb'] = Image::load($item['thumb'])->toArrayResponse();
 //            unset($item['parent_id']);
+            
             if(is_null($item['parent_id'])){
                 unset($item['parent_id']);
             }
@@ -43,7 +45,7 @@ class ServiceCTL extends BaseCTL {
                 $item['parent_id'] = MongoHelper::standardId($item['parent_id']);
             }
 
-            $item['node'] = NodeHelper::serviceFolder($item['_id']);
+//            $item['node'] = NodeHelper::serviceFolder($item['id']);
             return $item;
         }
         catch (ServiceException $ex){
@@ -201,8 +203,8 @@ class ServiceCTL extends BaseCTL {
 //                if($this->getCtx()->getTranslate()){
 //                    ArrayHelper::translateEntity($item, $this->getCtx()->getLang());
 //                }
-                $item['created_at'] = MongoHelper::timeToInt($item['created_at']);
-                $item['updated_at'] = MongoHelper::timeToInt($item['updated_at']);
+                $item['created_at'] = MongoHelper::dateToYmd($item['created_at']);
+                $item['updated_at'] = MongoHelper::dateToYmd($item['updated_at']);
                 MongoHelper::standardIdEntity($item);
 //                unset($item['parent_id']);
                 if(isset($item['parent_id'])){
