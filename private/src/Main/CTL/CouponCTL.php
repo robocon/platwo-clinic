@@ -67,7 +67,7 @@ class CouponCTL extends BaseCTL {
                     if($user !== false){
                         foreach($item['used_users'] as $value){
                             if($value['user']['id'] == $user['id']){
-                                if(MongoHelper::dateToYmd($value['expire']) <= time()){
+                                if($value['expire']->{'sec'} <= time()){
                                     $item['used_status'] = "timeout";
                                     break;
                                 }
@@ -117,7 +117,7 @@ class CouponCTL extends BaseCTL {
                 if($user !== false){
                     foreach($item['used_users'] as $value){
                         if($value['user']['id'] == $user['id']){
-                            if(MongoHelper::dateToYmd($value['expire']) <= time()){
+                            if($value['expire']->{'sec'} <= time()){
                                 $item['used_status'] = "timeout";
                                 break;
                             }
