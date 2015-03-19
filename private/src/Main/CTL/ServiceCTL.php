@@ -251,7 +251,12 @@ class ServiceCTL extends BaseCTL {
             $item['updated_at'] = MongoHelper::dateToYmd($item['updated_at']);
             MongoHelper::standardIdEntity($item);
 //            unset($item['parent_id']);
-            $item['parent_id'] = MongoHelper::standardId($item['parent_id']);
+            
+            if($item['parent_id'] !== null){
+                $item['parent_id'] = MongoHelper::standardId($item['parent_id']);
+            }else{
+                unset($item['parent_id']);
+            }
 
             return $item;
         }
