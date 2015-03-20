@@ -79,11 +79,13 @@ class NotifyHelper {
         if(isset($user['ios_device_token'])){
             foreach($user['ios_device_token'] as $token){
                 try {
-                    if($token['type'] == "dev"){
-                        self::getApnHelperDev()->send($token['key'], $pushMessage, $args, $user['display_notification_number']);
-                    }
-                    else if($token['type'] == "product"){
-                        self::getApnHelperProduct()->send($token['key'], $pushMessage, $args, $user['display_notification_number']);
+                    if(isset($token['type'])){
+                        if($token['type'] == 'dev'){
+                            $send = self::getApnHelperDev()->send($token['key'], $pushMessage, $args, $user['display_notification_number']);
+                        }
+                        else if($token['type'] == 'product'){
+                            $send = self::getApnHelperProduct()->send($token['key'], $pushMessage, $args, $user['display_notification_number']);
+                        }
                     }
                 }
                 catch (\Exception $e){
@@ -109,6 +111,8 @@ class NotifyHelper {
                 }
             }
         }
+        
+        return $send;
     }
 
     public static function create($objectId, $type, $header, $message, $userId){

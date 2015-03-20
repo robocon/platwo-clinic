@@ -7,18 +7,61 @@
  */
 
 namespace Main\CTL;
-#use Main\Exception\Service\ServiceException;
-#use Main\Helper\MongoHelper;
-#use Main\Helper\NodeHelper;
-#use Main\Helper\Validate;
-#use Main\Service\FeedGalleryService;
-#use Main\Service\FeedService;
+
+use Main\Context\Context;
+use Main\DataModel\Image;
+use Main\DB;
+use Main\Event\Event;
+use Main\Exception\Service\ServiceException;
+use Main\Helper\ArrayHelper;
+use Main\Helper\MongoHelper;
+use Main\Helper\NotifyHelper;
+use Main\Helper\ResponseHelper;
+use Main\Helper\UpdatedTimeHelper;
+use Main\Helper\URL;
+use Valitron\Validator;
+use Main\Helper\UserHelper;
 
 /**
  * @Restful
  * @uri /demo
  */
 class DemoCTL extends BaseCTL {
+    
+    /**
+     * @POST
+     * @uri /message
+     */
+    public function send_message() {
+        try {
+            
+            $db = DB::getDB();
+            $item = $db->feed->findOne(['_id' => new \MongoId('54ffc80310f0ed69058b4567')]);
+            
+            
+            UserHelper::check_token();
+            $pre_user = UserHelper::getUserDetail();
+            
+            $user = $db->users->findOne(['_id' => new \MongoId($pre_user['id'])]);
+            
+            $args = [];
+            
+            $send = NotifyHelper::send($user, $item['name'], $args);
+            return $send;
+            
+            // notify
+//            Event::add('after_response', function() use($item, $user, $args){
+//                NotifyHelper::send($insert['_id'], 'news', 'ได้เพิ่มข่าว', $insert['detail']);
+//                dump($item);
+//                $noti = NotifyHelper::send($user, $item['name'], $args);
+//                        dump($noti);
+//            });
+            
+        } catch (ServiceException $e) {
+            return $e->getResponse();
+        }
+    }
+    
     /**
      * @GET
      */
