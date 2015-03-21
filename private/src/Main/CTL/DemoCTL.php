@@ -50,7 +50,8 @@ class DemoCTL extends BaseCTL {
 //            $send = NotifyHelper::send($user, $item['name'], $args);
 //            return $send;
             
-            NotifyHelper::sendAll($item['_id'], 'news', 'ได้เพิ่มข่าว', $item['detail']);
+            $send = NotifyHelper::sendAll($item['_id'], 'news', 'ได้เพิ่มข่าว', $item['detail']);
+            return $send;
             
             // notify
             Event::add('after_response', function() use($item, $user, $args){
