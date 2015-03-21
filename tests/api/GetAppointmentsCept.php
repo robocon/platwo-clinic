@@ -1,7 +1,7 @@
 <?php 
 $I = new ApiTester($scenario);
 $I->wantTo('Get all appointment from user');
-$I->setHeader('access-token', '2cba37f7c3a7815f8a380a4f51fbc5c8766d2fbf7b96d94e3b85b970a0ff0cc2');
+$I->setHeader('access-token', 'f70862b6e1347aa07ec841be1f555bb6632061c3f56f27bb9232cb68b7d40209');
 $I->sendGET('appoint');
 $I->seeResponseCodeIs(200);
 $I->seeResponseIsJson();

@@ -56,6 +56,26 @@ class AppointmentCTL extends BaseCTL {
     }
     
     /**
+     * @POST
+     * @uri /history
+     */
+    public function add_history(){
+        try {
+            
+            if(UserHelper::hasPermission('appoint', 'add') === false){
+                throw new ServiceException(ResponseHelper::notAuthorize('Access deny'));
+            }
+            $user_id = UserHelper::$user_id;
+            
+            $item = AppointmentService::getInstance()->add_history($user_id, $this->reqInfo->params(), $this->getCtx());
+            return ['success' => $item];
+            
+        } catch (ServiceException $e) {
+            return $e->getResponse();
+        }
+    }
+    
+    /**
      * @GET
      */
     public function gets() {

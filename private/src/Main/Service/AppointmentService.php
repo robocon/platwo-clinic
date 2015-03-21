@@ -41,6 +41,10 @@ class AppointmentService extends BaseService {
     
     public function add($user_id, $params, Context $ctx) {
         
+        if(isset($params['access_token'])){
+            unset($params['access_token']);
+        }
+        
         $params['user_id'] = $user_id;
         
         $v = new Validator($params);
@@ -64,10 +68,39 @@ class AppointmentService extends BaseService {
         }
     }
     
+    public function add_history($user_id, $params, Context $ctx) {
+        
+        if(isset($params['access_token'])){
+            unset($params['access_token']);
+        }
+        
+        $params['user_id'] = $user_id;
+        
+        $v = new Validator($params);
+        $v->rule('required', ['user_id','date_add','time_add','detail']);
+        if(!$v->validate()){
+            throw new ServiceException(ResponseHelper::validateError($v->errors()));
+        }
+        
+        $pre_timestamp = strtotime($params['date_add'].' '.$params['time_add'].':00');
+        $params['date_time'] = new \MongoDate($pre_timestamp);
+        unset($params['date_add']);
+        unset($params['time_add']);
+        
+        $db = DB::getDB();
+        try {
+            $db->appointment->insert($params);
+            return true;
+        } catch (\MongoException $e) {
+            throw new ServiceException(ResponseHelper::error($e->getMessage(), $e->getCode()));
+        }
+    }
+    
     public function gets($user_id, Context $ctx) {
         
         $db = DB::getDB();
-        $items = $db->appointment->find(['user_id' => $user_id],['detail','date_time','status']);
+        $items = $db->appointment->find(['user_id' => $user_id],['detail','date_time','status'])
+                ->sort(['date_time' => 1]);
         
         $item_lists = [];
         foreach ($items as $item) {
