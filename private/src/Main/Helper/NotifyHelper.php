@@ -115,7 +115,7 @@ class NotifyHelper {
             }
         }
         
-//        return $send;
+        return $send;
     }
 
     public static function create($objectId, $type, $header, $message, $userId){
