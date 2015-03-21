@@ -43,8 +43,6 @@ class DemoCTL extends BaseCTL {
             $pre_user = UserHelper::getUserDetail();
             
             $user = $db->users->findOne(['_id' => new \MongoId($pre_user['id'])]);
-//            dump($user);
-//            exit;
             $args = [];
             
 //            $send = NotifyHelper::send($user, $item['name'], $args);

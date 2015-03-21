@@ -44,6 +44,8 @@ class NotifyHelper {
     public static function sendAll($objectId, $type, $header, $message){
         $db = DB::getDB();
         $users = $db->users->find([], ['setting', 'ios_device_token', 'android_token', 'display_notification_number']);
+        
+        $item_lists = [];
         foreach($users as $item){
             $userId = MongoHelper::mongoId($item['_id']);
             $entity = self::create($objectId, $type, $header, $message, $userId);
@@ -71,8 +73,10 @@ class NotifyHelper {
                 continue;
             
             
-            self::send($item, $message, $args);
+            $item_lists[] = self::send($item, $message, $args);
         }
+        
+        return $item_lists;
     }
 
     public static function send($user, $message, $args){
