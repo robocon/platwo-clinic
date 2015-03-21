@@ -58,16 +58,34 @@ class AppointmentCTL extends BaseCTL {
     /**
      * @GET
      */
-    public function get() {
+    public function gets() {
         try {
             
             if(UserHelper::hasPermission('appoint', 'read') === false){
                 throw new ServiceException(ResponseHelper::notAuthorize('Access deny'));
             }
             $user_id = UserHelper::$user_id;
-            $items['data'] = AppointmentService::getInstance()->get($user_id, $this->getCtx());
+            $items['data'] = AppointmentService::getInstance()->gets($user_id, $this->getCtx());
             $items['length'] = count($items['data']);
             return $items;
+            
+        } catch (ServiceException $e) {
+            return $e->getResponse();
+        }
+    }
+    
+    /**
+     * @GET
+     * @uri /[h:appoint_id]
+     */
+    public function get(){
+        try {
+            if(UserHelper::hasPermission('appoint', 'read') === false){
+                throw new ServiceException(ResponseHelper::notAuthorize('Access deny'));
+            }
+            
+            $item = AppointmentService::getInstance()->get($this->reqInfo->urlParam('appoint_id'), $this->getCtx());
+            return $item;
             
         } catch (ServiceException $e) {
             return $e->getResponse();

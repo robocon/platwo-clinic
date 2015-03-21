@@ -64,7 +64,7 @@ class AppointmentService extends BaseService {
         }
     }
     
-    public function get($user_id, Context $ctx) {
+    public function gets($user_id, Context $ctx) {
         
         $db = DB::getDB();
         $items = $db->appointment->find(['user_id' => $user_id],['detail','date_time','status']);
@@ -79,6 +79,24 @@ class AppointmentService extends BaseService {
         }
         
         return $item_lists;
+    }
+    
+    public function get($appoint_id, Context $ctx){
+        
+        $db = DB::getDB();
+        $item = $db->appointment->findOne(['_id' => new \MongoId($appoint_id)],[
+            'detail','name','phone','status','date_time','status'
+        ]);
+        
+        $item['id'] = $item['_id']->{'$id'};
+        unset($item['_id']);
+        
+        if(!isset($item['status'])){
+            $item['status'] = '';
+        }
+        $item['date_time'] = MongoHelper::dateToYmd($item['date_time']);
+        
+        return $item;
     }
     
     public function change_status($appoint_id, $params, Context $ctx) {
