@@ -69,7 +69,9 @@ class NotifyHelper {
 
             if(!$item['setting']['notify_message'] && $type == "message")
                 continue;
-
+            
+            
+            var_dump($item);
             self::send($item, $message, $args);
         }
     }
@@ -112,7 +114,7 @@ class NotifyHelper {
             }
         }
         
-        return $send;
+//        return $send;
     }
 
     public static function create($objectId, $type, $header, $message, $userId){

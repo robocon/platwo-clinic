@@ -226,6 +226,14 @@ class FeedService extends BaseService {
     public function get_overview(Context $ctx) {
         $db = DB::getDB();
         $item = $db->feed_overview->findOne();
+        
+        $picture_lists = [];
+        foreach($item['pictures'] as $pic){
+            $load = Image::load($pic);
+            $picture_lists[] = $load->toArrayResponse();
+        }
+        $item['pictures'] = $picture_lists;
+        
         $item['length'] = count($item['pictures']);
         unset($item['_id']);
         return $item;
