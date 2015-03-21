@@ -43,7 +43,8 @@ class DemoCTL extends BaseCTL {
             $pre_user = UserHelper::getUserDetail();
             
             $user = $db->users->findOne(['_id' => new \MongoId($pre_user['id'])]);
-            
+//            dump($user);
+//            exit;
             $args = [];
             
 //            $send = NotifyHelper::send($user, $item['name'], $args);
@@ -52,12 +53,12 @@ class DemoCTL extends BaseCTL {
             NotifyHelper::sendAll($item['_id'], 'news', 'ได้เพิ่มข่าว', $item['detail']);
             
             // notify
-//            Event::add('after_response', function() use($item, $user, $args){
+            Event::add('after_response', function() use($item, $user, $args){
 //                NotifyHelper::send($insert['_id'], 'news', 'ได้เพิ่มข่าว', $insert['detail']);
 //                dump($item);
 //                $noti = NotifyHelper::send($user, $item['name'], $args);
 //                        dump($noti);
-//            });
+            });
             
         } catch (ServiceException $e) {
             return $e->getResponse();

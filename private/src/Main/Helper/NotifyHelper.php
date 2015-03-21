@@ -47,7 +47,7 @@ class NotifyHelper {
         foreach($users as $item){
             $userId = MongoHelper::mongoId($item['_id']);
             $entity = self::create($objectId, $type, $header, $message, $userId);
-
+            
             // inc
             self::incBadge($item['_id']);
             $item['display_notification_number']++;
@@ -71,12 +71,13 @@ class NotifyHelper {
                 continue;
             
             
-            var_dump($item);
             self::send($item, $message, $args);
         }
     }
 
     public static function send($user, $message, $args){
+        
+        $send = false;
         $pushMessage = self::cutMessage($message);
         if(isset($user['ios_device_token'])){
             foreach($user['ios_device_token'] as $token){
