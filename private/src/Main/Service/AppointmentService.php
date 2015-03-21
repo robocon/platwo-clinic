@@ -75,6 +75,11 @@ class AppointmentService extends BaseService {
             unset($item['_id']);
 
             $item['date_time'] = MongoHelper::dateToYmd($item['date_time']);
+            
+            if(!isset($item['status'])){
+                $item['status'] = '';
+            }
+        
             $item_lists[] = $item;
         }
         
@@ -85,7 +90,7 @@ class AppointmentService extends BaseService {
         
         $db = DB::getDB();
         $item = $db->appointment->findOne(['_id' => new \MongoId($appoint_id)],[
-            'detail','name','phone','status','date_time','status'
+            'detail','name','phone','status','date_time'
         ]);
         
         $item['id'] = $item['_id']->{'$id'};
