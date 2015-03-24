@@ -99,8 +99,10 @@ class AppointmentService extends BaseService {
     public function gets($user_id, Context $ctx) {
         
         $db = DB::getDB();
-        $items = $db->appointment->find(['user_id' => $user_id],['detail','date_time','status'])
-                ->sort(['date_time' => 1]);
+        $items = $db->appointment->find([
+            'user_id' => $user_id, 
+            'status' => ['$ne' => 'cancelled'] 
+        ],['detail','date_time','status'])->sort(['date_time' => 1]);
         
         $item_lists = [];
         foreach ($items as $item) {

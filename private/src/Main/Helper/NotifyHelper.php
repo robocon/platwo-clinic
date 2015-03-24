@@ -48,6 +48,8 @@ class NotifyHelper {
         $item_lists = [];
         foreach($users as $item){
             $userId = MongoHelper::mongoId($item['_id']);
+            
+            // Add notification into database
             $entity = self::create($objectId, $type, $header, $message, $userId);
             
             // inc

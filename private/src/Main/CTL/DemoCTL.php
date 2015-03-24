@@ -43,21 +43,44 @@ class DemoCTL extends BaseCTL {
             $pre_user = UserHelper::getUserDetail();
             
             $user = $db->users->findOne(['_id' => new \MongoId($pre_user['id'])]);
-            $args = [];
             
-//            $send = NotifyHelper::send($user, $item['name'], $args);
+            
+            // START //
+            // Send a message to one person
+            $objectId = $item['_id'];
+            $type = 'news';
+            $header = 'Has add news';
+//            $message = $item['detail'];
+            $message = 'Test send a message to single person '.time();
+            $userId = $user['_id'];
+            
+            // Add notification into database
+            $entity = NotifyHelper::create($objectId, $type, $header, $message, $userId);
+            $entity['object']['id'] = MongoHelper::standardId($objectId);
+            $entity['id'] = MongoHelper::standardId($entity['_id']);
+            
+            $args = [
+                'id'=> $entity['id'],
+                'object_id'=> $entity['object']['id'],
+                'type'=> $type
+            ];
+            
+            $send = NotifyHelper::send($user, $message, $args);
+            return $send;
+            // END //
+            
+            
+            // Send a message to all users
+//            $send = NotifyHelper::sendAll($item['_id'], 'news', 'ได้เพิ่มข่าว', $item['detail']);
 //            return $send;
             
-            $send = NotifyHelper::sendAll($item['_id'], 'news', 'ได้เพิ่มข่าว', $item['detail']);
-            return $send;
-            
             // notify
-            Event::add('after_response', function() use($item, $user, $args){
+//            Event::add('after_response', function() use($item, $user, $args){
 //                NotifyHelper::send($insert['_id'], 'news', 'ได้เพิ่มข่าว', $insert['detail']);
 //                dump($item);
 //                $noti = NotifyHelper::send($user, $item['name'], $args);
 //                        dump($noti);
-            });
+//            });
             
         } catch (ServiceException $e) {
             return $e->getResponse();
