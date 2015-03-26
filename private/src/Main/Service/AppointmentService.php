@@ -62,7 +62,13 @@ class AppointmentService extends BaseService {
         $db = DB::getDB();
         try {
             $db->appointment->insert($params);
-            return true;
+            
+            $res = [
+                'success' => true,
+                'id' => $params['_id']->{'$id'},
+            ];
+            
+            return $res;
         } catch (\MongoException $e) {
             throw new ServiceException(ResponseHelper::error($e->getMessage(), $e->getCode()));
         }

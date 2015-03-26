@@ -48,7 +48,7 @@ class AppointmentCTL extends BaseCTL {
             $user_id = UserHelper::$user_id;
             
             $item = AppointmentService::getInstance()->add($user_id, $this->reqInfo->params(), $this->getCtx());
-            return ['success' => $item];
+            return $item;
             
         } catch (ServiceException $e) {
             return $e->getResponse();
