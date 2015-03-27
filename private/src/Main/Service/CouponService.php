@@ -66,7 +66,7 @@ class CouponService extends BaseService {
 
         // notify
         Event::add('after_response', function() use($insert) {
-            NotifyHelper::sendAll($insert['_id'], 'coupon', 'ได้เพิ่มคูปอง', $insert['detail']);
+            NotifyHelper::sendAll($insert['_id'], 'promotion', 'ได้เพิ่มโปรโมชั่น', $insert['detail']);
         });
 
         return $insert;
