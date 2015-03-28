@@ -11,6 +11,7 @@ namespace Main\DataModel;
 
 use Main\DB;
 use Main\Helper\URL;
+use Unirest\Request as Unirest;
 
 class Image {
 //    const BASE_URL = "http://".MEDIA_HOST;
@@ -46,11 +47,10 @@ class Image {
 
     public static function upload($b64){
         $url = self::absoluteUrl('post');
-        $response = @\Unirest::post($url, ["Accept" => "application/json"], ["img"=> $b64]);
+        $response = Unirest::post($url, ["Accept" => "application/json"], ["img"=> $b64]);
 //        $response->code; // HTTP Status code
 //        $response->headers; // Headers
 //        $response->raw_body; // Unparsed body
-
         $data = $response->body; // Parsed body
         return new self($data->objectid, $data->original_size->original_width, $data->original_size->original_height);
     }

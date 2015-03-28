@@ -2,13 +2,13 @@
 $I = new ApiTester($scenario);
 $I->wantTo('Add Appointment');
 $I->haveHttpHeader('Content-Type', 'application/x-www-form-urlencoded');
-$I->setHeader('access-token', '2cba37f7c3a7815f8a380a4f51fbc5c8766d2fbf7b96d94e3b85b970a0ff0cc2');
+$I->setHeader('access-token', '5f45012ef2611ec87e0eb19c048bad89c34b29e9c0896cb6cf9fd2930fbedc8d');
 $I->sendPOST('appoint', [
-    'date_add' => '2015-03-11',
-    'time_add' => '13:30',
-    'name' => 'Cartman',
-    'phone' => '0811111223',
-    'detail' => "test to add detail ".time(),
+    'date_add' => '2015-04-02',
+    'time_add' => '10:00',
+    'name' => 'test',
+    'phone' => '0811111111',
+    'detail' => "test to confirm ".time(),
     'status' => 'new'
 ]);
 $I->seeResponseCodeIs(200);

@@ -2,8 +2,9 @@
 $I = new ApiTester($scenario);
 $I->wantTo('Update Appointment Status');
 $I->haveHttpHeader('Content-Type', 'application/x-www-form-urlencoded');
-$I->setHeader('access-token', '2cba37f7c3a7815f8a380a4f51fbc5c8766d2fbf7b96d94e3b85b970a0ff0cc2');
-$I->sendPUT('appoint/status/5514c44510f0edee048b4567', [
+$I->setHeader('access-token', '5f45012ef2611ec87e0eb19c048bad89c34b29e9c0896cb6cf9fd2930fbedc8d');
+$I->sendPUT('appoint/status/5515209910f0ed79188b4567', [
+//    'status' => 'pending',
     'status' => 'confirmed'
 ]);
 $I->seeResponseCodeIs(200);

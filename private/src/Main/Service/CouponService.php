@@ -36,20 +36,20 @@ class CouponService extends BaseService {
     public function addCoupon($params, Context $ctx) {
         $v = new Validator($params);
         $v->rule('required', ['name', 'detail', 'thumb']);
-
         if (!$v->validate()) {
             throw new ServiceException(ResponseHelper::validateError($v->errors()));
         }
 
         $insert = ArrayHelper::filterKey(['name', 'detail', 'code'], $params);
+        
         $insert['thumb'] = Image::upload($params['thumb'])->toArray();
-
+        
         // seq insert
         $agg = $this->getCollection()->aggregate([
             ['$group' => ['_id' => null, 'max' => ['$max' => '$seq']]]
         ]);
         $insert['seq'] = (int) @$agg['result'][0]['max'] + 1;
-
+        
         $now = new \MongoDate(time());
         $insert['code'] = strtoupper(substr(uniqid(), -5));
         $insert['created_at'] = $now;
@@ -58,17 +58,17 @@ class CouponService extends BaseService {
 //        $insert['type'] = 'coupon';
         $insert['used_count'] = 0;
         $insert['used_users'] = [];
-
+        
         $this->getCollection()->insert($insert);
-
+        
         // service update timestamp (last_update)
         UpdatedTimeHelper::update('coupon', time());
 
         // notify
-        Event::add('after_response', function() use($insert) {
+//        Event::add('after_response', function() use($insert) {
             NotifyHelper::sendAll($insert['_id'], 'promotion', 'ได้เพิ่มโปรโมชั่น', $insert['detail']);
-        });
-
+//        });
+            
         return $insert;
     }
 
