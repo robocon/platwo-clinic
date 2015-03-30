@@ -83,4 +83,17 @@ class MessageCTL extends BaseCTL {
             return $e->getResponse();
         }
     }
+    
+    /**
+     * @PUT
+     * @uri /status
+     */
+    public function status() {
+        try {
+            $item = MessageService::getInstance()->send_status($this->reqInfo->params(), $this->getCtx());
+            return $item;
+        } catch (ServiceException $e) {
+            return $e->getResponse();
+        }
+    }
 }

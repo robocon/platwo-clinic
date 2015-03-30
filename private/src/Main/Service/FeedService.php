@@ -32,11 +32,14 @@ class FeedService extends BaseService {
     public function add($params, Context $ctx){
         $v = new Validator($params);
         $v->rule('required', ['name', 'detail','thumb']);
-
         if(!$v->validate()){
             throw new ServiceException(ResponseHelper::validateError($v->errors()));
         }
 
+        if($ctx->getUser() === null){
+            return ResponseHelper::error('Invalid token');
+        }
+        
         $insert = ArrayHelper::filterKey(['name', 'detail','thumb'], $params);
 
         $insert['thumb'] = Image::upload($params['thumb'])->toArray();
@@ -55,9 +58,9 @@ class FeedService extends BaseService {
         UpdatedTimeHelper::update('feed', time());
 
         // notify
-        Event::add('after_response', function() use($insert){
+//        Event::add('after_response', function() use($insert){
             NotifyHelper::sendAll($insert['_id'], 'news', 'ได้เพิ่มข่าว', $insert['detail']);
-        });
+//        });
 
         return $insert;
     }
