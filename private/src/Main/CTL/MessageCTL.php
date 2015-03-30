@@ -68,4 +68,19 @@ class MessageCTL extends BaseCTL {
             return $ex->getResponse();
         }
     }
+    
+    /**
+     * @POST
+     * @uri /specify
+     */
+    public function specify() {
+        try {
+            
+            $item = MessageService::getInstance()->send_specify($this->reqInfo->params(), $this->getCtx());
+            return $item;
+            
+        } catch (ServiceException $e) {
+            return $e->getResponse();
+        }
+    }
 }

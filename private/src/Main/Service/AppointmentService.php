@@ -160,30 +160,30 @@ class AppointmentService extends BaseService {
         $db = DB::getDB();
         
         // If update status from pending to confirmed will send a notification to user
-        if($item['status'] == 'pending' && $params['status'] == 'confirmed'){
-            
-            $pre_user = UserHelper::getUserDetail();
-            $user = $db->users->findOne(['_id' => new \MongoId($pre_user['id'])]);
-            
-            $objectId = new \MongoId($item['id']);
-            $type = 'card';
-            $header = 'ได้คอนเฟิร์ม';
-            $message = $item['detail'];
-            $userId = $user['_id'];
-            
-            $entity = NotifyHelper::create($objectId, $type, $header, $message, $userId);
-            $entity['object']['id'] = MongoHelper::standardId($objectId);
-            $entity['id'] = MongoHelper::standardId($entity['_id']);
-            
-            $args = [
-                'id'=> $entity['id'],
-                'object_id'=> $entity['object']['id'],
-                'type'=> $type
-            ];
-            
-            $send = NotifyHelper::send($user, $message, $args);
-            
-        }
+//        if($item['status'] == 'pending' && $params['status'] == 'confirmed'){
+//            
+//            $pre_user = UserHelper::getUserDetail();
+//            $user = $db->users->findOne(['_id' => new \MongoId($pre_user['id'])]);
+//            
+//            $objectId = new \MongoId($item['id']);
+//            $type = 'card';
+//            $header = 'ได้คอนเฟิร์ม';
+//            $message = $item['detail'];
+//            $userId = $user['_id'];
+//            
+//            $entity = NotifyHelper::create($objectId, $type, $header, $message, $userId);
+//            $entity['object']['id'] = MongoHelper::standardId($objectId);
+//            $entity['id'] = MongoHelper::standardId($entity['_id']);
+//            
+//            $args = [
+//                'id'=> $entity['id'],
+//                'object_id'=> $entity['object']['id'],
+//                'type'=> $type
+//            ];
+//            
+//            $send = NotifyHelper::send($user, $message, $args);
+//            
+//        }
         
         $update = $db->appointment->update(['_id' => new \MongoId($appoint_id)],['$set' => $params]);
         

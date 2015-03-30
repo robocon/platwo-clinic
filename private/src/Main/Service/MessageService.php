@@ -148,4 +148,105 @@ class MessageService extends BaseService {
 
         return $res;
     }
+    
+    public function send_specify($params, Context $ctx) {
+        
+        $v = new Validator($params);
+        $v->rule('required', ['type', 'id']);
+        $v->rule('in','type', ['appointment','history','news','coupon','service']);
+        if(!$v->validate()){
+            throw new ServiceException(ResponseHelper::validateError($v->errors()));
+        }
+        
+        $db = DB::getDB();
+        $user = $ctx->getUser();
+        $id = new \MongoId($params['id']);
+        if($user !== null){
+            
+            if ($params['type'] == 'appointment') {
+                $item = $db->appointment->findOne(['_id' => $id]);
+                
+                $objectId = $item['_id'];
+                $type = 'card';
+                $header = 'ได้นัดหมาย';
+                $message = $item['detail'];
+                
+                // Override above user
+                $user = $ctx->loadUser(new \MongoId($params['traget_id']));
+                $userId = $user['_id'];
+                
+                $send_type = 'single';
+            
+            }  elseif ($params['type'] == 'history') {
+                $item = $db->appointment->findOne(['_id' => $id]);
+                
+                $objectId = $item['_id'];
+                $type = 'card';
+                $header = 'ได้เพิ่มประวัติ';
+                $message = $item['detail'];
+                
+                // Override above user
+                $user = $ctx->loadUser(new \MongoId($params['traget_id']));
+                $userId = $user['_id'];
+                
+                $send_type = 'single';
+                
+            } elseif ($params['type'] == 'news') {
+                $item = $db->feed->findOne(['_id' => $id]);
+                
+                $objectId = $item['_id'];
+                $type = 'news';
+                $header = 'ได้เพิ่มข่าว';
+                $message = $item['detail'];
+                
+                $send_type = 'all';
+                
+            } elseif ($params['type'] == 'coupon') {
+                $item = $db->coupon->findOne(['_id' => $id]);
+                
+                $objectId = $item['_id'];
+                $type = 'promotion';
+                $header = 'ได้เพิ่มโปรโมชั่น';
+                $message = $item['detail'];
+                
+                $send_type = 'all';
+            } elseif ($params['type'] == 'service') {
+                $item = $db->services->findOne(['_id' => $id]);
+                
+                $objectId = $item['_id'];
+                $type = 'service';
+                $header = 'ได้เพิ่มบริการ';
+                $message = $item['detail'];
+                
+                $send_type = 'all';
+            }
+            
+            if($send_type == 'single'){
+                
+                $entity = NotifyHelper::create($objectId, $type, $header, $message, $userId);
+                $entity['object']['id'] = MongoHelper::standardId($objectId);
+                $entity['id'] = MongoHelper::standardId($entity['_id']);
+
+                $args = [
+                    'id'=> $entity['id'],
+                    'object_id'=> $entity['object']['id'],
+                    'type'=> $type
+                ];
+                
+                $send = NotifyHelper::send($user, $message, $args);
+            }else{
+                $send = NotifyHelper::sendAll($objectId, $type, $header, $message);
+            }
+            
+            if($send !== null OR !empty($send)){
+                return ['success' => true];
+            }else{
+                return ResponseHelper::error('Can not send notification');
+            }
+            
+        }else{
+            return ResponseHelper::error('Invalid token');
+        }
+        
+    }
 }

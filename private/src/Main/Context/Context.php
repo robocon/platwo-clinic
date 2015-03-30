@@ -86,4 +86,15 @@ class Context {
     public function getAppId(){
         return $this->getApp()['_id'];
     }
+    
+    /**
+     * 
+     * @param mixed-object $id Something like $item['_id']
+     * @return type
+     */
+    public function loadUser($id){
+        $db = DB::getDB();
+        $user = $db->users->findOne(['_id' => $id]);
+        return $user;
+    }
 }
