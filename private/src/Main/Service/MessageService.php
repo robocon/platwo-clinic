@@ -249,7 +249,10 @@ class MessageService extends BaseService {
                 $type = 'card';
                 $message = $item['detail'];
                 
-                if($item['status'] == 'pending'){
+                if($item['status'] == 'new'){
+                    $header = 'ทำการนัดหมาย';
+                    
+                }else if($item['status'] == 'pending'){
                     $header = 'กำลังดำเนินการนัดหมาย';
                     
                 }else if($item['status'] == 'cancelled'){
