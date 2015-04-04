@@ -15,7 +15,8 @@ use Main\Exception\Service\ServiceException;
 use Main\Helper\MongoHelper;
 use Main\Helper\NotifyHelper;
 use Main\Helper\ResponseHelper;
-use Main\Helper\URL;
+use Main\Helper\URL,
+    Main\Helper\UserHelper;
 
 class UserNotifyService extends BaseService {
     public function getCollection(){
@@ -101,15 +102,18 @@ class UserNotifyService extends BaseService {
     }
 
     public function clearDisplayNotificationNumber(Context $ctx){
-        $user = $ctx->getUser();
-        if(is_null($user)){
+        
+        $check_user = UserHelper::check_token();
+        if($check_user === false){
             throw new ServiceException(ResponseHelper::notAuthorize());
         }
-
-        $this->getUserCollection()->update(['_id'=> $user['_id']], ['$set'=> ['display_notification_number'=> 0]]);
+        $user = UserHelper::getUserDetail();
+        $this->getUserCollection()->update(['_id'=> new \MongoId($user['id'])], ['$set'=> ['display_notification_number'=> 0]]);
         NotifyHelper::clearBadge($user);
         $user['display_notification_number'] = 0;
-
+        unset($user['group_role']);
+        unset($user['perms']);
+        
         return $user;
     }
 
