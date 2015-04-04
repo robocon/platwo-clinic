@@ -37,17 +37,40 @@ class OAuthService extends BaseService {
             throw new ServiceException(ResponseHelper::validateError($v->errors()));
         }
         
-        FacebookSession::setDefaultApplication(FacebookHelper::$app_id, FacebookHelper::$app_secret);
-        $session = new FacebookSession($params['facebook_token']);
+        $fb = new \Facebook\Facebook([
+            'app_id' => FacebookHelper::$app_id,
+            'app_secret' => FacebookHelper::$app_secret,
+            'default_graph_version' => 'v2.2',
+        ]);
+        
         try {
-            $me = (new FacebookRequest(
-                $session, 'GET', '/me'
-            ))->execute()->getGraphObject(GraphUser::className());
+            // Get the Facebook\GraphNodes\GraphUser object for the current user.
+            // If you provided a 'default_access_token', the '{access-token}' is optional.
+            $response = $fb->get('/me?fields=id,name,email,gender,birthday,picture{url}', $params['facebook_token']);
+            $me = $response->getGraphUser();
             $fbId = $me->getId();
-
-        } catch(FacebookRequestException $e) {
-            throw new ServiceException(ResponseHelper::error($e->getMessage()));
+            
+        } catch(\Facebook\Exceptions\FacebookResponseException $e) {
+            // When Graph returns an error
+            throw new ServiceException(ResponseHelper::error($e->getMessage(), $e->getCode()));
+            
+        } catch(\Facebook\Exceptions\FacebookSDKException $e) {
+            // When validation fails or other local issues
+            throw new ServiceException(ResponseHelper::error($e->getMessage(), $e->getCode()));
         }
+        
+        
+//        FacebookSession::setDefaultApplication(FacebookHelper::$app_id, FacebookHelper::$app_secret);
+//        $session = new FacebookSession($params['facebook_token']);
+//        try {
+//            $me = (new FacebookRequest(
+//                $session, 'GET', '/me'
+//            ))->execute()->getGraphObject(GraphUser::className());
+//            $fbId = $me->getId();
+//
+//        } catch(FacebookRequestException $e) {
+//            throw new ServiceException(ResponseHelper::error($e->getMessage()));
+//        }
             
         // Check facebook id again
         if($fbId === null){
@@ -103,7 +126,8 @@ class OAuthService extends BaseService {
                 $item['access_token'] = UserHelper::generate_token(MongoHelper::standardId($item['_id']), $user_private_key);
 
                 // get picture from facebook
-                $pictureSource = file_get_contents('http://graph.facebook.com/'.$fbId.'/picture?type=large');
+//                $pictureSource = file_get_contents('http://graph.facebook.com/'.$fbId.'/picture?type=large');
+                $pictureSource = file_get_contents($me->getPicture()->getUrl());
                 if($pictureSource === false){
                     throw new ServiceException(ResponseHelper::error("Can't read facebook profile picture."));
                 }
