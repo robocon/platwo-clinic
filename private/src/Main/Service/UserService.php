@@ -329,6 +329,7 @@ class UserService extends BaseService {
         $id = MongoHelper::mongoId($id);
 
         $fields = $this->fields;
+        array_push($fields, 'display_notification_number');
         unset($fields['password']);
 
         $entity = $this->getCollection()->findOne(['_id'=> $id], $fields);

@@ -49,6 +49,9 @@ class Context {
     }
 
     public function loadAccessToken($accessToken){
+        if($accessToken === null){
+            return false;
+        }
         $db = DB::getDB();
         $this->user = $db->users->findOne(['access_token'=> $accessToken]);
     }

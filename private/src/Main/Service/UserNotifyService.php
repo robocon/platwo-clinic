@@ -103,18 +103,23 @@ class UserNotifyService extends BaseService {
 
     public function clearDisplayNotificationNumber(Context $ctx){
         
-        $check_user = UserHelper::check_token();
-        if($check_user === false){
+        $user = $ctx->getUser();
+        if($user === null){
             throw new ServiceException(ResponseHelper::notAuthorize());
         }
-        $user = UserHelper::getUserDetail();
-        $this->getUserCollection()->update(['_id'=> new \MongoId($user['id'])], ['$set'=> ['display_notification_number'=> 0]]);
-        NotifyHelper::clearBadge($user);
-        $user['display_notification_number'] = 0;
-        unset($user['group_role']);
-        unset($user['perms']);
         
-        return $user;
+        $this->getUserCollection()->update(['_id'=> $user['_id']], ['$set'=> ['display_notification_number'=> 0]]);
+        NotifyHelper::clearBadge($user);
+
+        $user['id'] = $user['_id']->{'$id'};
+        unset($user['_id']);
+        
+        $res = [
+            'id' => $user['id'],
+            'display_notification_number' => $user['display_notification_number'],
+        ];
+        
+        return $res;
     }
 
     public function delete($id, Context $ctx){
