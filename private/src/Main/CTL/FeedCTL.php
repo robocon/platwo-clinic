@@ -11,6 +11,7 @@ use Main\Exception\Service\ServiceException;
 use Main\Helper\MongoHelper;
 use Main\Helper\NodeHelper;
 use Main\Helper\Validate;
+use Main\Helper\UserHelper;
 use Main\Service\FeedGalleryService;
 use Main\Service\FeedService;
 
