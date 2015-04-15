@@ -110,7 +110,7 @@ class AppointmentService extends BaseService {
         $items = $db->appointment->find([
             'user_id' => $user_id, 
             'status' => ['$ne' => 'cancelled'] 
-        ],['detail','date_time','status'])->sort(['date_time' => 1]);
+        ],['detail','date_time','status'])->sort(['date_time' => -1]);
         
         $item_lists = [];
         foreach ($items as $item) {
