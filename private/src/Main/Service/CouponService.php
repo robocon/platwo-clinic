@@ -127,7 +127,7 @@ class CouponService extends BaseService {
                 ->find($condition)
                 ->limit((int) $options['limit'])
                 ->skip((int) $skip)
-                ->sort(['seq' => -1]);
+                ->sort(['seq' => 1]);
 
         $data = [];
 
